@@ -10,6 +10,8 @@ set_project_root()
 
 ```{r}
 # Extract summary statistics for all CpGs in the matrix
+# Matrix naming comes from preprocessing: TRUE files contain mean beta values
+# by age, while FALSE files contain within-age standard deviations.
 
 # extractResults(avg_matrix_path, sd_matrix_path, sd_coeff_cutoff)
 # only parameter to be set is sd_coeff_cutoff, which is the coefficient for equation sqrt(Beta * (1 - Beta))
@@ -194,6 +196,8 @@ ggsave("../fig_repository/supp_fig3.png", panel_grid, width=9, height=30, dpi=30
 
 ```{r}
 # Extract aaCpGs for each section based on sum stats generated previously
+# Threshold arguments are: |correlation|, young-window beta change,
+# old-window beta change, and the maximum count of high-SD age points.
 
 # extra_filter adds the condition that if less than 100 sites are selected, select the 100 sites with the greatest absolute beta change
 
@@ -231,6 +235,8 @@ saveRDS(female_list, "relevant_rds/female_list.rds")
 Print lists to console and total unique CpGs selected
 
 ```{r}
+# Collapse the per-window lists into one unique CpG set for each cohort. A CpG
+# selected in multiple age windows appears only once in the saved *_select_cpg file.
 all_cpg <- character()
 for (i in 1:length(all_list)) {
   print(paste0("All, Age window: ", names(all_list)[i], " # CpGs: ", length(all_list[[i]])))
@@ -434,7 +440,8 @@ M28$end <- M28$start + 2
 set.seed(123)
 M1 <- M28[sample(nrow(M28), size=1000000, replace=FALSE), ]
 
-# need to run clustering code first
+# Cross-stage dependency: this figure uses cluster assignments produced in stage 3,
+# so rerun this figure chunk after the clustering notebook has created non_all.
 # non_all contains all cluster information
 
 all_aaCpG <- rownames(non_all)

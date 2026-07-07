@@ -41,6 +41,8 @@ Calculate statistics for downstream filtering
 # param sd_matrix_path: path to matrix of standard deviations, used to fulfill one filter criterion (from Preproc.Rmd)
 
 # output: data frame of 3 columns for each age range -> correlation, abs change, num points over sd threshold
+# Windows span 20 years and advance in 5-year steps. Each CpG therefore gets
+# one three-column result block per overlapping age window.
 
 extractResults <- function(avg_matrix_path, sd_matrix_path, sd_coeff_cutoff) {
   library(foreach)
@@ -140,6 +142,8 @@ Parallelized version of extractResults
 # param sd_matrix_path: path to matrix of standard deviations, used to fulfill one filter criterion (from Preproc.Rmd)
 
 # output: data frame of 3 columns for each age range -> correlation, abs change, num points over sd threshold
+# Windows span 20 years and advance in 5-year steps. Each CpG therefore gets
+# one three-column result block per overlapping age window.
 
 extractResultsParallel <- function(avg_matrix_path, sd_matrix_path, sd_coeff_cutoff) {
   library(foreach)
@@ -218,7 +222,9 @@ Filter using results
 
 ```{r}
 
-# note: if less than 100 sites selected for filter, first do standard deviation filtering, then filter for top 1000 by r, then final top 100 by absolute beta change, just for representation of other age windows
+# Fallback for sparse windows: when fewer than 100 CpGs pass all thresholds,
+# extra_filter=TRUE retains 100 candidates from the correlation/SD-filtered set,
+# ranked by absolute beta change. This keeps sparse windows visible in plots.
 
 # output: structure with for each age window: num of cpg sites filtered and full list
 extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs_threshold_young, abs_threshold_old, sd_threshold, extra_filter=TRUE) {

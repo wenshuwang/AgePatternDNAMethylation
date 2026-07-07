@@ -144,7 +144,9 @@ set.seed(123)
 
 mainPipeline <- function(num_clusters, save=FALSE, clock=FALSE, gender_state="all", ret, labs) {
   
-  Sys.setenv("OBJC_DISABLE_INITIALIZE_FORK_SAFETY" = "YES") # not sure what this is doing, taken off stack overflow
+  # macOS-only workaround for forked parallel workers that initialize Objective-C.
+  # It is inert on Windows/Linux but retained for reproducibility on the original setup.
+  Sys.setenv("OBJC_DISABLE_INITIALIZE_FORK_SAFETY" = "YES")
   
   # Read appropriate matrix
   if (gender_state=="all") {
@@ -161,7 +163,8 @@ mainPipeline <- function(num_clusters, save=FALSE, clock=FALSE, gender_state="al
     break
   }
   
-  # reset cpg_filter to just clock sites if clock=TRUE, if not, remove clock sites from analysis
+  # Keep the two analyses disjoint: clock=TRUE analyzes only clock CpGs; the
+  # aaCpG analysis explicitly removes clock CpGs from its cohort-specific set.
   clock_sites <- readRDS("relevant_rds/clock_cpgs.rds")
   cpg_filter <- cpg_filter[cpg_filter %notin% clock_sites]
   if (clock==TRUE) {
@@ -176,7 +179,8 @@ mainPipeline <- function(num_clusters, save=FALSE, clock=FALSE, gender_state="al
   # Filter
   B <- B[rownames(B) %in% cpg_filter,]
   
-  # Scale
+  # Z-score each CpG across ages so clustering reflects trajectory shape rather
+  # than the CpG's absolute methylation level.
   B <- t(scale(t(B)))
   B <- as.matrix(B)
   colnames(B) <- gsub("age_", "", colnames(B))
@@ -184,7 +188,8 @@ mainPipeline <- function(num_clusters, save=FALSE, clock=FALSE, gender_state="al
   
   print(paste0("CpGs investigated: ", dim(B)[1]))
   
-  # Fill in sparse NA values using linear interpolation
+  # Fill sparse missing ages by linear interpolation within each CpG. rule=2 in
+  # interpolate_na carries the nearest observed value beyond either endpoint.
   print(paste0("Total NA: ", (sum(is.na(B)) / (dim(B)[1] * dim(B)[2]) * 100), " percent"))
   B <- t(apply(B, 1, interpolate_na))
   
@@ -214,7 +219,7 @@ mainPipeline <- function(num_clusters, save=FALSE, clock=FALSE, gender_state="al
       print("doing clock heatmap")
       ht <- Heatmap(B, name = " ", 
           row_km = num_clusters,
-          row_km_repeats = 10,  # Different start points for kmeans clustering
+          row_km_repeats = 10,  # repeat k-means starts to stabilize assignments
           show_row_names = FALSE,
           cluster_columns = FALSE,
           row_title = "Clock CpGs", 
@@ -233,7 +238,7 @@ mainPipeline <- function(num_clusters, save=FALSE, clock=FALSE, gender_state="al
       print("doing normal heatmap")
       ht <- Heatmap(B, name = " ", 
           row_km = num_clusters,
-          row_km_repeats = 10,  # Different start points for kmeans clustering
+          row_km_repeats = 10,  # repeat k-means starts to stabilize assignments
           show_row_names = FALSE,
           cluster_columns = FALSE,
           row_title = "aaCpGs", 

@@ -11,6 +11,8 @@ set_project_root()
 ```{r}
 clocks <- c("McEwen", "Wu", "Hannum", "Horvath", "Levine", "Belsky", "Teschendorff", "Shireby", "Lu")
 selected_clock_cpgs <- readRDS("relevant_rds/clock_cpgs.rds")
+# Binary annotation matrix: rows are clock CpGs and columns indicate membership
+# in each published clock. It is displayed beside the clock heatmap.
 clock_annotations <- matrix(0,
   nrow = length(selected_clock_cpgs),
   ncol = length(clocks),
@@ -23,7 +25,9 @@ for(j in seq_along(clocks)) {
   clock_annotations[hits, this_clock] <- 1
 }
 
-correct_order <- readRDS("relevant_rds/correct_order.rds") # is this the correct order before or after ordering??
+# Row order saved by the clustering/heatmap step; applying it keeps annotation
+# rows aligned with the already ordered heatmap rows.
+correct_order <- readRDS("relevant_rds/correct_order.rds")
 clock_annotations <- clock_annotations[correct_order, ]
 
 df_ann <- as.data.frame(clock_annotations, stringsAsFactors = FALSE)
@@ -54,6 +58,8 @@ ha <- rowAnnotation(
 # param ret: either "df" to get the matrix with clusters annotated for use in further pipeline, or "plot" to get the plot, for use in combining in Fig 2 and 5
 # param labs: only relevant if ret == "plot", just specifying what labels you want
 
+# These four calls use the same seed and four-cluster setting so panels are
+# comparable. ret="df" returns CpG rows with their assigned cluster.
 non_all <- mainPipeline(4, TRUE, FALSE, "all", "df", c("C", "D"))
 clock_all <- mainPipeline(4, TRUE, TRUE, "all", "df", c("A", "B"))
 male_all <- mainPipeline(4, TRUE, FALSE, "male", "df", c("A", "B"))
@@ -106,7 +112,10 @@ ggsave("new_figs/fig_5.pdf", plot = combined, device = cairo_pdf, width = 15, he
 
 
 
-UNUSED BELOW
+UNUSED / RETAINED FOR REFERENCE BELOW
+
+The remaining chunks are exploratory genomic-distribution work and are not
+required to reproduce the primary clustering figures.
 
 ```{r}
 library(circlize)

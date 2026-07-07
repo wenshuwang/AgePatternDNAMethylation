@@ -146,6 +146,8 @@ library(data.table)
 # param output_folder: folder to write splits to
 
 # output: none, writes N splits to project files
+# Each split contains one age row plus a subset of CpG rows, with samples in
+# columns. Splitting bounds memory use while preserving all eligible samples.
 
 makeSplits <- function(cpg_list, full_metadata, valid_samples, sites_per_list, output_folder) {
   # List all preprocessed datasets
@@ -235,6 +237,8 @@ createEmptyMatrix <- function(row_number, cpg_list, start_age, end_age) {
 # param output_folder: folder to output matrices
 
 # output: matrix for downstream analysis
+# Rows are CpGs and columns are integer ages 0-80. average=TRUE computes the
+# mean beta at each age; average=FALSE computes the within-age SD.
 
 generateMatrix <- function(input_folder, cpg_list, full_metadata, gender, average, output_folder) {
   list_files <- list.files(path = input_folder)
@@ -249,6 +253,7 @@ generateMatrix <- function(input_folder, cpg_list, full_metadata, gender, averag
     rownames(temp) <- temp[, 1]
     temp <- temp[, -1]
     
+    # Reload the shared eligibility checkpoint so every split uses the same cohort.
     valid_samples <- readRDS("intermediates/valid_samples.rds")
     
     if (gender=="male") {

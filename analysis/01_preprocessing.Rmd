@@ -31,10 +31,16 @@ Start from scratch (datasets directly from OneDrive)
 - Made the choice to individually go through each dataset instead of writing a pipeline function to ensure that nuances do not slip through
 
 ```{r}
-# NOTE: based on some non-linear programming (whoops... we filter for valid_samples, even though that is only determined after running this chunk)
+# Resume dependency: valid_samples.rds is created near the end of this notebook.
+# On a fresh run, process the datasets once to create that checkpoint; on later
+# runs it prevents loading samples with missing ages or ages above the cutoff.
 nonlinear_vs <- readRDS("intermediates/valid_samples.rds")
 
-# 4 things to check after each dataset has been processed: metadata_tracker, running_site_list, and valid_samples, full_metadata
+# These objects accumulate information across all 23 datasets:
+# - metadata_tracker: number of samples at each age in each dataset
+# - running_site_list: number of datasets containing each CpG
+# - site_list_by_samples: number of non-missing samples for each CpG
+# - valid_samples/full_metadata: eligible sample IDs and standardized metadata
 age_range <- 0:100
 metadata_tracker <- data.frame(matrix(0, nrow=length(age_range), ncol=0))
 rownames(metadata_tracker) <- paste0("age", age_range)
@@ -52,6 +58,9 @@ full_metadata <- data.frame(sample_id = NULL,
                             type = NULL,
                             tissue = NULL,
                             disease_status = NULL)
+
+# Each data/Raw/GSE<accession>/ folder uses the same two input names. The code
+# still handles each study separately because metadata schemas differ.
 
 # 1. GSE32148
 # ------------------
@@ -971,6 +980,8 @@ gc(full = TRUE)
 full_metadata$age <- round(as.numeric(full_metadata$age))
 
 temp <- unlist(valid_samples)
+# Save stage-level checkpoints so preprocessing can resume without rereading
+# every raw methylation table.
 saveRDS(temp, "intermediates/valid_samples.rds")
 saveRDS(full_metadata, "intermediates/full_metadata.rds")
 saveRDS(metadata_tracker, "intermediates/metadata_tracker.rds")
@@ -1174,6 +1185,8 @@ female_samples <- full_metadata[full_metadata$gender=="female" | full_metadata$g
 female_samples <- intersect(female_samples, valid_samples)
 
 # generateMatrix(input_folder, cpg_list, full_metadata, gender, average, output_folder)
+# Filename convention: TRUE means age-wise mean beta values; FALSE means
+# age-wise standard deviations. The prefix is all/male/female.
 
 generateMatrix(input_folder, cpg_list, full_metadata, "all", TRUE, output_folder)
 generateMatrix(input_folder, cpg_list, full_metadata, "all", FALSE, output_folder)
