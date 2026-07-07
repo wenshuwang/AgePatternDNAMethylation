@@ -7,7 +7,7 @@ documented in the repository's main README.
 - `preprocessing.Rmd`: earlier preprocessing workflow
 - `methylation_patterns.Rmd`: earlier combined analysis notebook
 - `HelperFunctions.Rmd`: earlier shared helper code
-- `additional (female dataset filter).Rmd`: supplementary exploratory filter
+- `additional_female_male_counts.R`: supplementary exploratory counts
 - `details.txt`: historical notes
 
 New analysis code should go into the primary stage notebooks rather than this

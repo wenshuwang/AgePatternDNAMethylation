@@ -1,102 +1,90 @@
 # Age-Related Patterns of DNA Methylation Changes
 
-Analysis code accompanying the manuscript [Age-Related Patterns of DNA
-Methylation Changes](https://www.biorxiv.org/content/10.1101/2024.12.10.627727v2).
+Analysis code for the manuscript [Age-Related Patterns of DNA Methylation
+Changes](https://www.biorxiv.org/content/10.1101/2024.12.10.627727v2).
 
-## Study overview
+The study analyzes 4,641 samples from 23 GEO datasets to characterize
+age-associated CpGs, sex differences, epigenetic clocks, and non-linear DNA
+methylation trajectories.
 
-This project analyzes DNA methylation measurements from 4,641 samples across
-23 GEO datasets. It compares CpGs used by nine epigenetic clocks, identifies
-age-associated CpGs, examines sex-specific differences, and clusters
-non-linear methylation trajectories.
+## Start here
 
-## Repository layout
+The live pipeline is in [`analysis/`](analysis/README.md). Files are numbered in
+the order they should be run:
+
+1. preprocessing
+2. filtering
+3. clustering
+
+Each stage has a `_helpers.Rmd` notebook that must be run before its matching
+analysis notebook. For example, run `01_preprocessing_helpers.Rmd` before
+`01_preprocessing.Rmd`.
+
+## Repository map
 
 ```text
 .
-|-- README.md
-|-- ClusteringHelpers.Rmd     # functions and dependencies for clustering
-|-- Clustering.Rmd            # clustering analysis and Figures 2 and 5
-|-- scripts/
-|   |-- PreprocHelpers.Rmd    # preprocessing functions and dependencies
-|   |-- Preproc.Rmd           # preprocessing and supplementary figures
-|   |-- FilterHelpers.Rmd     # filtering functions and dependencies
-|   `-- Filtering.Rmd         # filtering, tables, and manuscript figures
-|-- data/
-|   `-- README.md             # expected input-data layout
-|-- fig_repository/           # final manuscript figures
-`-- extra/                    # archived exploratory and superseded analyses
+|-- analysis/             numbered notebooks for the current pipeline
+|-- R/                    shared project-path utilities
+|-- data/                 local raw, processed, matrix, and reference data
+|-- relevant_rds/         generated R checkpoints (not tracked by Git)
+|-- fig_repository/       final manuscript figures
+|-- archive/              exploratory and superseded analyses
+|-- check_inputs.R        reports missing required inputs
+`-- REORGANIZATION_NOTES.md
 ```
 
-Large datasets and generated intermediate files are intentionally not included
-in the repository. See `data/README.md` for the expected local layout.
+Large data, RDS checkpoints, manuscript drafts, and private working files are
+not stored in Git.
 
-## Pipeline order
-
-Run notebooks in this order:
-
-1. `scripts/PreprocHelpers.Rmd`, then `scripts/Preproc.Rmd`
-2. `scripts/FilterHelpers.Rmd`, then `scripts/Filtering.Rmd`
-3. `ClusteringHelpers.Rmd`, then `Clustering.Rmd`
-
-The helper notebook for each stage defines the functions, packages, and shared
-objects used by the analysis notebook. Run every chunk in the helper before
-running the corresponding analysis notebook. The analysis is deliberately
-split into chunks and writes checkpoints so a long run can be resumed.
-
-## Working directories
-
-The preprocessing and filtering notebooks use paths relative to `scripts/`.
-Open those notebooks from that directory. The clustering notebooks use paths
-relative to the repository root. Changing the working directory will cause
-input-file errors.
-
-## Local folders
-
-Create these untracked folders before running the analysis:
+## Expected data layout
 
 ```text
-data/Raw/                 one folder per GEO accession
-data/pp_datasets/         standardized datasets
-data/matrix/              age-by-CpG matrices
-data/ref/                 manifests and clock reference files
-data/splits/              temporary matrix splits
-intermediates/            saved R objects and checkpoints
-relevant_rds/             filtering results and downstream R objects
-fig_repository/           final manuscript figures
+data/
+|-- Raw/
+|   `-- GSE<accession>/
+|       |-- methylation_data.csv
+|       |-- metadata.csv
+|       `-- cleaned_metadata.csv     optional
+|-- pp_datasets/
+|   `-- GSE<accession>_pp.csv
+|-- matrix/
+|   |-- allTRUE.csv
+|   |-- allFALSE.csv
+|   |-- maleTRUE.csv
+|   |-- maleFALSE.csv
+|   |-- femaleTRUE.csv
+|   `-- femaleFALSE.csv
+`-- ref/                            clock definitions and HM450 manifest
 ```
 
-Every active notebook loads `project_paths.R` first and resolves paths from the
-repository root. The code therefore uses the same locations whether a notebook
-is opened from the root or from `scripts/`.
+The notebooks locate the repository root through `R/project_paths.R`, so their
+data paths do not depend on the directory from which they are opened.
 
-Each `data/Raw/GSE<accession>/` folder is expected to contain
-`methylation_data.csv` and `metadata.csv`. A `cleaned_metadata.csv` file may
-also be present, but preprocessing deliberately starts from `metadata.csv`.
+## Check inputs
 
-## Reproducibility notes
+From the repository root, run:
 
-- Raw GEO and reference data are not bundled in this archive.
-- The supplied `relevant_rds` folder contains the three filtering-result objects.
-  Later filtering chunks generate additional RDS objects needed by clustering.
-- Clock definitions and the HM450 manifest under `data/ref/` were not included
-  in the supplied downloads and must be provided separately.
-- The notebooks require R plus CRAN and Bioconductor packages loaded in the
-  helper notebooks.
-- Some steps are computationally intensive and were designed to resume from
-  saved `.rds` files.
-- `extra/` is retained for provenance, but it is not part of the current
-  three-stage pipeline.
+```r
+source("check_inputs.R")
+```
 
-## Manuscript outputs
+The checker lists missing raw datasets, matrix files, and the three supplied
+filtering-result RDS files. It does not download anything.
+
+## Main outputs
 
 - Preprocessing: Supplementary Figures 1, 2, and 5
 - Filtering: Supplementary Figures 3 and 4; Table 1; Figures 3 and 4
 - Clustering: Figures 2 and 5
 
+## Notes
+
+- `archive/` is retained for provenance and is not part of the live pipeline.
+- Additional RDS objects needed by clustering are created during filtering.
+- Reference clock files and the HM450 manifest must be available under
+  `data/ref/`.
+
 ## Contact
 
-Questions about the scientific analysis: [kchen24@stanford.edu](mailto:kchen24@stanford.edu)
-
-Repository documentation reorganized July 2026. Scientific analysis code and
-reported results were not altered by this documentation cleanup.
+[kchen24@stanford.edu](mailto:kchen24@stanford.edu)

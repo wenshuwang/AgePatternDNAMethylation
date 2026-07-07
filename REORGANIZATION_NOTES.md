@@ -9,10 +9,11 @@ scientific results.
   expected working directories, data layout, and manuscript outputs.
 - Replaced the allow-list `.gitignore`, which hid nearly every new file, with
   explicit rules for local data, checkpoints, rendered notebooks, and R state.
-- Fixed the missing closing quote in the `Clustering.Rmd` YAML title.
+- Fixed the missing closing quote in the clustering notebook's YAML title.
 - Documented the expected data filenames and reference-data locations.
-- Clearly marked `extra/` as an archive rather than an active pipeline stage.
-- Centralized working-directory handling in `project_paths.R`.
+- Moved the six active notebooks into a numbered `analysis/` pipeline.
+- Moved exploratory work into `archive/` and added navigation notes.
+- Moved shared working-directory handling into `R/project_paths.R`.
 - Updated raw-data links to `data/Raw/GSE<accession>/methylation_data.csv`
   and `metadata.csv`.
 - Updated processed-data, matrix, and checkpoint links to `data/pp_datasets`,

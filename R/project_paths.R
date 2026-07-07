@@ -1,7 +1,7 @@
 find_project_root <- function(start = getwd()) {
   current <- normalizePath(start, winslash = "/", mustWork = TRUE)
   repeat {
-    if (file.exists(file.path(current, "README.md")) && dir.exists(file.path(current, "scripts"))) return(current)
+    if (file.exists(file.path(current, "README.md")) && dir.exists(file.path(current, "analysis"))) return(current)
     parent <- dirname(current)
     if (identical(parent, current)) stop("Could not find the AgePatternDNAMethylation project root.")
     current <- parent
