@@ -3,19 +3,24 @@ title: "Filter"
 output: html_notebook
 ---
 
+```{r project-paths, include=FALSE}
+source(if (file.exists("project_paths.R")) "project_paths.R" else "../project_paths.R")
+set_project_root()
+```
+
 ```{r}
 # Extract summary statistics for all CpGs in the matrix
 
 # extractResults(avg_matrix_path, sd_matrix_path, sd_coeff_cutoff)
 # only parameter to be set is sd_coeff_cutoff, which is the coefficient for equation sqrt(Beta * (1 - Beta))
 
-all_results <- extractResults("../data/matrix/allTRUE.csv", "../data/matrix/allFALSE.csv", 0.2)
-male_results <- extractResultsParallel("../data/matrix/maleTRUE.csv", "../data/matrix/maleFALSE.csv", 0.2)
-female_results <- extractResultsParallel("../data/matrix/femaleTRUE.csv", "../data/matrix/femaleFALSE.csv", 0.2)
+all_results <- extractResults("data/matrix/allTRUE.csv", "data/matrix/allFALSE.csv", 0.2)
+male_results <- extractResultsParallel("data/matrix/maleTRUE.csv", "data/matrix/maleFALSE.csv", 0.2)
+female_results <- extractResultsParallel("data/matrix/femaleTRUE.csv", "data/matrix/femaleFALSE.csv", 0.2)
 
-saveRDS(all_results, "../intermediates/filter/all_results.rds")
-saveRDS(male_results, "../intermediates/filter/male_results.rds")
-saveRDS(female_results, "../intermediates/filter/female_results.rds")
+saveRDS(all_results, "relevant_rds/all_results.rds")
+saveRDS(male_results, "relevant_rds/male_results.rds")
+saveRDS(female_results, "relevant_rds/female_results.rds")
 ```
 
 Examine results to determine filter cutoffs
@@ -29,15 +34,15 @@ Examine results to determine filter cutoffs
 # highlight clock cpgs NOT selected
 
 # load all results
-all_results <- readRDS("../intermediates/filter/all_results.rds")
-male_results <- readRDS("../intermediates/filter/male_results.rds")
-female_results <- readRDS("../intermediates/filter/female_results.rds")
+all_results <- readRDS("relevant_rds/all_results.rds")
+male_results <- readRDS("relevant_rds/male_results.rds")
+female_results <- readRDS("relevant_rds/female_results.rds")
 
-#all_list <- readRDS("all_list.rds")
-#male_list <- readRDS("male_list.rds")
-#female_list <- readRDS("female_list.rds")
+#all_list <- readRDS("relevant_rds/all_list.rds")
+#male_list <- readRDS("relevant_rds/male_list.rds")
+#female_list <- readRDS("relevant_rds/female_list.rds")
 
-#clock_cpgs <- readRDS("clock_cpgs.rds")
+#clock_cpgs <- readRDS("relevant_rds/clock_cpgs.rds")
 
 #age_windows <- names(all_list)
 #n_winds <- length(age_windows)
@@ -195,7 +200,7 @@ ggsave("../fig_repository/supp_fig3.png", panel_grid, width=9, height=30, dpi=30
 # extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs_threshold_young, abs_threshold_old, sd_threshold, extra_filter=TRUE)
 
 
-filtered_list <- readRDS("../intermediates/POST_sites.rds")
+filtered_list <- readRDS("intermediates/POST_sites.rds")
 
 all_sig_counts    <- extract_sites(all_results,    filtered_list, "All",    0.5, 0.2, 0.2, 2, TRUE)
 male_sig_counts   <- extract_sites(male_results,   filtered_list, "Male",   0.5, 0.2, 0.2, 2, TRUE)
@@ -205,9 +210,9 @@ all_list <- convert_to_list_format(all_sig_counts)
 male_list <- convert_to_list_format(male_sig_counts)
 female_list <- convert_to_list_format(female_sig_counts)
 
-saveRDS(all_list, "all_list.rds")
-saveRDS(male_list, "male_list.rds")
-saveRDS(female_list, "female_list.rds")
+saveRDS(all_list, "relevant_rds/all_list.rds")
+saveRDS(male_list, "relevant_rds/male_list.rds")
+saveRDS(female_list, "relevant_rds/female_list.rds")
 
 
 # run to get results without the extra filter
@@ -250,9 +255,9 @@ for (i in 1:length(female_list)) {
 female_cpg <- unique(female_cpg)
 print(length(female_cpg))
 
-saveRDS(all_cpg, "all_select_cpg.rds")
-saveRDS(male_cpg, "male_select_cpg.rds")
-saveRDS(female_cpg, "female_select_cpg.rds")
+saveRDS(all_cpg, "relevant_rds/all_select_cpg.rds")
+saveRDS(male_cpg, "relevant_rds/male_select_cpg.rds")
+saveRDS(female_cpg, "relevant_rds/female_select_cpg.rds")
 
 a <- intersect(clock_sites, all_cpg)
 b <- intersect(clock_sites, male_cpg)
@@ -271,10 +276,10 @@ p1 <- grid.grabExpr({
   draw(UpSet(m2, set_order = rownames(m2), pt_size = unit(1.5, "mm"), lwd=1))
 })
 
-all_cpg   <- readRDS("all_select_cpg.rds")
-male_cpg  <- readRDS("male_select_cpg.rds")
-female_cpg<- readRDS("female_select_cpg.rds")
-clock_cpg <- readRDS("clock_cpgs.rds")
+all_cpg   <- readRDS("relevant_rds/all_select_cpg.rds")
+male_cpg  <- readRDS("relevant_rds/male_select_cpg.rds")
+female_cpg<- readRDS("relevant_rds/female_select_cpg.rds")
+clock_cpg <- readRDS("relevant_rds/clock_cpgs.rds")
 
 upset2list <- list("All aaCpGs"    = all_cpg, 
                    "Male aaCpGs"   = male_cpg,
@@ -355,9 +360,9 @@ ggsave("new_figs/fig_3.pdf", device=cairo_pdf, plot=last_plot(), width=14, heigh
 #male_list
 #female_list
 
-all_list <- readRDS("all_list.rds")
-male_list <- readRDS("male_list.rds")
-female_list <- readRDS("female_list.rds")
+all_list <- readRDS("relevant_rds/all_list.rds")
+male_list <- readRDS("relevant_rds/male_list.rds")
+female_list <- readRDS("relevant_rds/female_list.rds")
 
 m_up <- make_comb_mat(male_list, mode="intersect")
 male_upset_grob <- grid.grabExpr({
@@ -417,7 +422,7 @@ Circos plots showing genomic distribution (is this in final manuscript?)
 # C: aaCpG, male aaCpG, female aaCpG
 
 # 450K array
-ann <- read.table("HM450.hg38.manifest.tsv", sep="\t", header=TRUE, quote="", comment.char="", fileEncoding = "UTF-8")
+ann <- read.table("data/ref/HM450.hg38.manifest.tsv", sep="\t", header=TRUE, quote="", comment.char="", fileEncoding = "UTF-8")
 ann <- ann[!is.na(ann$CpG_chrm) & !is.na(ann$CpG_beg) & !is.na(ann$CpG_end), ]
 rownames(ann) <- ann$probeID
 K450 <- ann[, 1:3]
@@ -439,7 +444,7 @@ all_aaCpG_plt <- K450[rownames(K450) %in% all_aaCpG, ]
 male_aaCpG_plt <- K450[rownames(K450) %in% male_aaCpG, ]
 female_aaCpG_plt <- K450[rownames(K450) %in% female_aaCpG, ]
 
-filtered_down_cpg <- readRDS("cpg_list.rds")
+filtered_down_cpg <- readRDS("relevant_rds/cpg_list.rds")
 filtered_plt <- K450[rownames(K450) %in% filtered_down_cpg, ]
 
 cluster1_cpg <- rownames(non_all[non_all$Cluster==1, ])
@@ -607,4 +612,3 @@ ggline(
   theme_and_axis_legend
 ggsave("new_figs/filter_dotplot.png", plot=last_plot(), width=10, height = 3, dpi=300)
 ```
-

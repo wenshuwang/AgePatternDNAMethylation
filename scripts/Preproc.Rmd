@@ -3,6 +3,11 @@ title: "Pre-Processing"
 output: html_notebook
 ---
 
+```{r project-paths, include=FALSE}
+source(if (file.exists("project_paths.R")) "project_paths.R" else "../project_paths.R")
+set_project_root()
+```
+
 - One by one -> keep track in notebook
 
 Start from scratch (datasets directly from OneDrive) 
@@ -27,7 +32,7 @@ Start from scratch (datasets directly from OneDrive)
 
 ```{r}
 # NOTE: based on some non-linear programming (whoops... we filter for valid_samples, even though that is only determined after running this chunk)
-nonlinear_vs <- readRDS("../intermediates/valid_samples.rds")
+nonlinear_vs <- readRDS("intermediates/valid_samples.rds")
 
 # 4 things to check after each dataset has been processed: metadata_tracker, running_site_list, and valid_samples, full_metadata
 age_range <- 0:100
@@ -51,11 +56,11 @@ full_metadata <- data.frame(sample_id = NULL,
 # 1. GSE32148
 # ------------------
 
-file_path <- "../data/raw/oGSE32148_beta.xlsx"
-file_path2 <- "../data/raw/oGSE32148_md.xlsx"
+file_path <- "data/Raw/GSE32148/methylation_data.csv"
+file_path2 <- "data/Raw/GSE32148/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
 print(paste0("Ages above 80: ", sum(as.numeric(temp_md$age)>80, na.rm=TRUE)))
@@ -82,18 +87,18 @@ site_list_by_samples[idx, ] <- site_list_by_samples[idx, ] + rowSums(!is.na(temp
 full_metadata <- rbind(full_metadata, temp_md)
 
 # save processed data
-#write.csv(new_dataset, "../../data/processed/GSE32148_pp.csv") # work-around to preserve rownames, when read using fread, rownames become the first column
+#write.csv(new_dataset, "data/pp_datasets/GSE32148_pp.csv") # work-around to preserve rownames, when read using fread, rownames become the first column
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 2. GSE36054
 # ------------------
 
-file_path <- "../data/raw/oGSE36054_beta.xlsx"
-file_path2 <- "../data/raw/oGSE36054_md.xlsx"
+file_path <- "data/Raw/GSE36054/methylation_data.csv"
+file_path2 <- "data/Raw/GSE36054/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
 print(paste0("Ages above 80: ", sum(as.numeric(temp_md$age)>80, na.rm=TRUE)))
@@ -120,15 +125,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../../data/processed/GSE36054_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE36054_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 3. GSE40279
 # ------------------
 
-file_path <- "../data/raw/oGSE40279_beta.csv"
-file_path2 <- "../data/raw/oGSE40279_md.csv"
+file_path <- "data/Raw/GSE40279/methylation_data.csv"
+file_path2 <- "data/Raw/GSE40279/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -158,15 +163,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE40279_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE40279_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 4. GSE50660
 # ------------------
 
-file_path <- "../data/raw/oGSE50660_beta.csv"
-file_path2 <- "../data/raw/oGSE50660_md.csv"
+file_path <- "data/Raw/GSE50660/methylation_data.csv"
+file_path2 <- "data/Raw/GSE50660/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -196,18 +201,18 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE50660_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE50660_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 5. GSE50759
 # ------------------
 
-file_path <- "../data/raw/oGSE50759_beta.xlsx"
-file_path2 <- "../data/raw/oGSE50759_md.xlsx"
+file_path <- "data/Raw/GSE50759/methylation_data.csv"
+file_path2 <- "data/Raw/GSE50759/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 colnames(temp_md) <- c("sample_id", "age", "gender", "type")
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
@@ -239,15 +244,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE50759_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE50759_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 6. GSE51057
 # ------------------
 
-file_path <- "../data/raw/oGSE51057_beta.csv"
-file_path2 <- "../data/raw/oGSE51057_md.csv"
+file_path <- "data/Raw/GSE51057/methylation_data.csv"
+file_path2 <- "data/Raw/GSE51057/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -278,15 +283,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE51057_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE51057_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 7. GSE53740
 # ------------------
 
-file_path <- "../data/raw/oGSE53740_beta.csv"
-file_path2 <- "../data/raw/oGSE53740_md.csv"
+file_path <- "data/Raw/GSE53740/methylation_data.csv"
+file_path2 <- "data/Raw/GSE53740/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -317,15 +322,15 @@ temp_md <- temp_md[, c(1, 2, 3, 4, 6, 5)]
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE53740_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE53740_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 8. GSE61256
 # ------------------
 
-file_path <- "../data/raw/oGSE61256_beta.csv"
-file_path2 <- "../data/raw/oGSE61256_md.csv"
+file_path <- "data/Raw/GSE61256/methylation_data.csv"
+file_path2 <- "data/Raw/GSE61256/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -356,15 +361,15 @@ temp_md <- temp_md[, c(1, 2, 3, 4, 6, 5)]
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE61256_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE61256_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 9. GSE67705
 # ------------------
 
-file_path <- "../data/raw/oGSE67705_beta.csv"
-file_path2 <- "../data/raw/oGSE67705_md.csv"
+file_path <- "data/Raw/GSE67705/methylation_data.csv"
+file_path2 <- "data/Raw/GSE67705/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -394,15 +399,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE67705_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE67705_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 10. GSE73103
 # ------------------
 
-file_path <- "../data/raw/oGSE73103_beta.csv"
-file_path2 <- "../data/raw/oGSE73103_md.csv"
+file_path <- "data/Raw/GSE73103/methylation_data.csv"
+file_path2 <- "data/Raw/GSE73103/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -432,18 +437,18 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE73103_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE73103_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 11. GSE80261
 # ------------------
 
-file_path <- "../data/raw/oGSE80261_beta.xlsx"
-file_path2 <- "../data/raw/oGSE80261_md.xlsx"
+file_path <- "data/Raw/GSE80261/methylation_data.csv"
+file_path2 <- "data/Raw/GSE80261/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 colnames(temp_md)[1] <- "sample_id"
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
@@ -472,15 +477,15 @@ temp_md <- temp_md[, c(1, 2, 3, 4, 6, 5)]
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE80261_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE80261_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 12. GSE85568
 # ------------------
 
-file_path <- "../data/raw/oGSE85568_beta.csv"
-file_path2 <- "../data/raw/oGSE85568_md.csv"
+file_path <- "data/Raw/GSE85568/methylation_data.csv"
+file_path2 <- "data/Raw/GSE85568/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -515,15 +520,15 @@ temp_md <- temp_md[, c(1, 2, 3, 4, 6, 5)]
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE85568_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE85568_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 13. GSE89253
 # ------------------
 
-file_path <- "../data/raw/oGSE89253_beta.csv"
-file_path2 <- "../data/raw/oGSE89253_md.csv"
+file_path <- "data/Raw/GSE89253/methylation_data.csv"
+file_path2 <- "data/Raw/GSE89253/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -558,15 +563,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE89253_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE89253_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 14. GSE90124
 # ------------------
 
-file_path <- "../data/raw/oGSE90124_beta.csv"
-file_path2 <- "../data/raw/oGSE90124_md.csv"
+file_path <- "data/Raw/GSE90124/methylation_data.csv"
+file_path2 <- "data/Raw/GSE90124/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -596,18 +601,18 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE90124_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE90124_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 15. GSE94734
 # ------------------
 
-file_path <- "../data/raw/oGSE94734_beta.xlsx"
-file_path2 <- "../data/raw/oGSE94734_md.xlsx"
+file_path <- "data/Raw/GSE94734/methylation_data.csv"
+file_path2 <- "data/Raw/GSE94734/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
 print(paste0("Ages above 80: ", sum(as.numeric(temp_md$age)>80, na.rm=TRUE)))
@@ -635,15 +640,15 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE94734_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE94734_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 16. GSE106648
 # ------------------
 
-file_path <- "../data/raw/oGSE106648_beta.csv"
-file_path2 <- "../data/raw/oGSE106648_md.csv"
+file_path <- "data/Raw/GSE106648/methylation_data.csv"
+file_path2 <- "data/Raw/GSE106648/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -673,15 +678,15 @@ temp_md <- temp_md[, c(1, 2, 3, 4, 6, 5)]
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE106648_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE106648_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 17. GSE114134
 # ------------------
 
-file_path <- "../data/raw/oGSE114134_beta.csv"
-file_path2 <- "../data/raw/oGSE114134_md.csv"
+file_path <- "data/Raw/GSE114134/methylation_data.csv"
+file_path2 <- "data/Raw/GSE114134/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -720,7 +725,7 @@ temp_md <- temp_md[, c(1, 2, 3, 4, 6, 5)]
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE114134_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE114134_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
@@ -731,8 +736,8 @@ gc(full = TRUE)
 # 18. GSE124366
 # ------------------
 
-file_path <- "../data/raw/oGSE124366_beta.csv"
-file_path2 <- "../data/raw/oGSE124366_md.csv"
+file_path <- "data/Raw/GSE124366/methylation_data.csv"
+file_path2 <- "data/Raw/GSE124366/metadata.csv"
 
 temp_beta <- readCSV(file_path)
 temp_md <- readCSV(file_path2)
@@ -763,18 +768,18 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE124366_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE124366_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 19. GSE137495
 # ------------------
 
-file_path <- "../data/raw/oGSE137495_beta.xlsx"
-file_path2 <- "../data/raw/oGSE137495_md.xlsx"
+file_path <- "data/Raw/GSE137495/methylation_data.csv"
+file_path2 <- "data/Raw/GSE137495/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
 print(paste0("Ages above 80: ", sum(as.numeric(temp_md$age)>80, na.rm=TRUE)))
@@ -801,18 +806,18 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE137495_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE137495_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
 # 20. GSE138279
 # ------------------
 
-file_path <- "../data/raw/oGSE138279_beta.xlsx"
-file_path2 <- "../data/raw/oGSE138279_md.xlsx"
+file_path <- "data/Raw/GSE138279/methylation_data.csv"
+file_path2 <- "data/Raw/GSE138279/metadata.csv"
 
-temp_beta <- readXLSX(file_path)
-temp_md <- readXLSX(file_path2)
+temp_beta <- readCSV(file_path)
+temp_md <- readCSV(file_path2)
 
 print(paste0("Total ages NA: ", sum(is.na(as.numeric(temp_md$age)))))
 print(paste0("Ages above 80: ", sum(as.numeric(temp_md$age)>80, na.rm=TRUE)))
@@ -839,7 +844,7 @@ temp_md$disease_status <- "none"
 colnames(temp_md) <- c("sample_id", "age", "gender", "type", "tissue", "disease_status")
 full_metadata <- rbind(full_metadata, temp_md)
 
-#write.csv(new_dataset, "../data/processed/GSE138279_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE138279_pp.csv")
 rm(temp_beta, temp_md, new_dataset)
 gc(full = TRUE)
 
@@ -850,10 +855,12 @@ library(GEOquery)
 # 21. GSE62924
 # ------------------
 
-gse <- getGEO("GSE62924", GSEMatrix = TRUE)
-gse_info <- gse[[1]]
-betas <- exprs(gse_info)
-metadata <- pData(gse_info)
+file_path <- "data/Raw/GSE62924/methylation_data.csv"
+file_path2 <- "data/Raw/GSE62924/metadata.csv"
+betas <- as.data.frame(readCSV(file_path))
+rownames(betas) <- betas[, 1]
+betas <- betas[, -1]
+metadata <- as.data.frame(readCSV(file_path2))
 
 metadata <- metadata[, c(2, 8)]
 metadata$gender <- "none"
@@ -879,17 +886,19 @@ site_list_by_samples[idx, ] <- site_list_by_samples[idx, ] + rowSums(!is.na(beta
 
 full_metadata <- rbind(full_metadata, metadata)
 
-#write.csv(new_dataset, "../data/processed/GSE62924_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE62924_pp.csv")
 rm(betas, metadata, new_dataset)
 gc(full = TRUE)
 
 # 22. GSE51180
 # ------------------
 
-gse <- getGEO("GSE51180", GSEMatrix = TRUE)
-gse_info <- gse[[1]]
-betas <- exprs(gse_info)
-metadata <- pData(gse_info)
+file_path <- "data/Raw/GSE51180/methylation_data.csv"
+file_path2 <- "data/Raw/GSE51180/metadata.csv"
+betas <- as.data.frame(readCSV(file_path))
+rownames(betas) <- betas[, 1]
+betas <- betas[, -1]
+metadata <- as.data.frame(readCSV(file_path2))
 
 metadata <- metadata[, c(1, 2, 6, 37)]
 metadata$tissue <- "blood spot"
@@ -915,17 +924,19 @@ site_list_by_samples[idx, ] <- site_list_by_samples[idx, ] + rowSums(!is.na(beta
 
 full_metadata <- rbind(full_metadata, metadata)
 
-#write.csv(new_dataset, "../data/processed/GSE51180_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE51180_pp.csv")
 rm(betas, metadata, new_dataset)
 gc(full = TRUE)
 
 # 23. GSE30870
 # ------------------
 
-gse <- getGEO("GSE30870", GSEMatrix = TRUE)
-gse_info <- gse[[1]]
-betas <- exprs(gse_info)
-metadata <- pData(gse_info)
+file_path <- "data/Raw/GSE30870/methylation_data.csv"
+file_path2 <- "data/Raw/GSE30870/metadata.csv"
+betas <- as.data.frame(readCSV(file_path))
+rownames(betas) <- betas[, 1]
+betas <- betas[, -1]
+metadata <- as.data.frame(readCSV(file_path2))
 
 metadata <- metadata[, c(2, 6, 8, 12)]
 metadata$age <- ifelse(metadata[, 3] == "Newborns", 0, 100) # not all nonagenarians are 100, just setting it do that because it will get cancelled out anyway
@@ -953,24 +964,24 @@ site_list_by_samples[idx, ] <- site_list_by_samples[idx, ] + rowSums(!is.na(beta
 
 full_metadata <- rbind(full_metadata, metadata)
 
-#write.csv(new_dataset, "../data/processed/GSE30870_pp.csv")
+#write.csv(new_dataset, "data/pp_datasets/GSE30870_pp.csv")
 rm(betas, metadata, new_dataset)
 gc(full = TRUE)
 
 full_metadata$age <- round(as.numeric(full_metadata$age))
 
 temp <- unlist(valid_samples)
-saveRDS(temp, "../intermediates/valid_samples.rds")
-saveRDS(full_metadata, "../intermediates/full_metadata.rds")
-saveRDS(metadata_tracker, "../intermediates/metadata_tracker.rds")
-saveRDS(running_site_list, "../intermediates/running_site_list.rds")
-saveRDS(site_list_by_samples, "../intermediates/site_list_by_samples.rds")
+saveRDS(temp, "intermediates/valid_samples.rds")
+saveRDS(full_metadata, "intermediates/full_metadata.rds")
+saveRDS(metadata_tracker, "intermediates/metadata_tracker.rds")
+saveRDS(running_site_list, "intermediates/running_site_list.rds")
+saveRDS(site_list_by_samples, "intermediates/site_list_by_samples.rds")
 
 male_samples <- full_metadata[full_metadata$gender == "male" | full_metadata$gender == "Male", ]$sample_id
 female_samples <- full_metadata[full_metadata$gender == "female" | full_metadata$gender == "Female", ]$sample_id
 
-saveRDS(male_samples, "../intermediates/male_samples.rds")
-saveRDS(female_samples, "../intermediates/female_samples.rds")
+saveRDS(male_samples, "intermediates/male_samples.rds")
+saveRDS(female_samples, "intermediates/female_samples.rds")
 ```
 
 Generate age distribution figures
@@ -987,14 +998,14 @@ MALE_COLOR <- "#ADD8E6"
 FEMALE_COLOR <- "#FFB6C1"
 ALL_COLOR <- "black"
 
-metadata_tracker <- readRDS("../intermediates/metadata_tracker.rds")
-running_site_list <- readRDS("../intermediates/running_site_list.rds")
-site_list_by_samples <- readRDS("../intermediates/site_list_by_samples.rds")
+metadata_tracker <- readRDS("intermediates/metadata_tracker.rds")
+running_site_list <- readRDS("intermediates/running_site_list.rds")
+site_list_by_samples <- readRDS("intermediates/site_list_by_samples.rds")
 
-md <- readRDS("../intermediates/full_metadata.rds")
-valid_samples <- readRDS("../intermediates/valid_samples.rds")
-male <- readRDS("../intermediates/male_samples.rds")
-female <- readRDS("../intermediates/female_samples.rds")
+md <- readRDS("intermediates/full_metadata.rds")
+valid_samples <- readRDS("intermediates/valid_samples.rds")
+male <- readRDS("intermediates/male_samples.rds")
+female <- readRDS("intermediates/female_samples.rds")
 
 md <- md[md$sample_id %in% valid_samples, ]
 male_md <- md[md$sample_id %in% male, ]
@@ -1076,7 +1087,7 @@ ggsave(
 
 filtered_sites <- site_list_by_samples[site_list_by_samples$Count >= 4176, , drop=FALSE]
 filtered_sites <- rownames(filtered_sites)
-saveRDS(filtered_sites, "../intermediates/POST_sites.rds")
+saveRDS(filtered_sites, "intermediates/POST_sites.rds")
 
 # BELOW CODE IS FOR BY-DATASET FILTERINg
 # load clock sites and filter again
@@ -1134,11 +1145,11 @@ Make Splits (necessary because of limited compute)
 
 ```{r}
 #cpg_list <- readRDS("cpg_list.rds") # this is filtered down 393,628
-sites <- readRDS("../intermediates/site_list_by_samples.rds")
+sites <- readRDS("intermediates/site_list_by_samples.rds")
 cpg_list <- rownames(sites) # full 485577
-full_metadata <- readRDS("../intermediates/full_metadata.rds")
-valid_samples <- readRDS("../intermediates/valid_samples.rds")
-output_folder <- "../data/splits/"
+full_metadata <- readRDS("intermediates/full_metadata.rds")
+valid_samples <- readRDS("intermediates/valid_samples.rds")
+output_folder <- "data/splits/"
 
 makeSplits(cpg_list, full_metadata, valid_samples, 50000, output_folder)
 ```
@@ -1151,11 +1162,11 @@ Make matrix from splits
 #                - FUTURE: RE-GENERATE MATRICES WHEN CPG_LIST CHANGES
 
 #cpg_list <- readRDS("cpg_list.rds")
-input_folder <- "../data/splits/"
-cpg_list <- readRDS("../intermediates/POST_sites.rds")
-full_metadata <- readRDS("../intermediates/full_metadata.rds")
-valid_samples <- readRDS("../intermediates/valid_samples.rds")
-output_folder <- "../data/matrix/"
+input_folder <- "data/splits/"
+cpg_list <- readRDS("intermediates/POST_sites.rds")
+full_metadata <- readRDS("intermediates/full_metadata.rds")
+valid_samples <- readRDS("intermediates/valid_samples.rds")
+output_folder <- "data/matrix/"
 
 male_samples <- full_metadata[full_metadata$gender=="male" | full_metadata$gender=="Male", ]$sample_id
 male_samples <- intersect(male_samples, valid_samples)
@@ -1223,11 +1234,11 @@ epiTOC2 <- function(data.m,ages.v=NULL){
 
 # Order: HannumG2013, HorvathS2013, LevineM2018, *Wu not included, LuA2019, McEwenL2019, epiTOC2, ShirebyG2020, DunedinPACE
 
-met <- readRDS("../intermediates/full_metadata.rds")
+met <- readRDS("intermediates/full_metadata.rds")
 
 clock_names <- list("HannumG2013", "HorvathS2013", "LevineM2018", "LuA2019", "McEwenL2019", "epiTOC2", "ShirebyG2020", "DunedinPACE")
 
-Wu_CpGs <- read_excel("../data/ref/CpGsToInvestigate/aging-11-102399-s003..xlsx")
+Wu_CpGs <- read_excel("data/ref/CpGsToInvestigate/aging-11-102399-s003..xlsx")
 Wu_CpGs <- Wu_CpGs[-1, ]
 Wu_CpGs <- Wu_CpGs$CpGs
 
@@ -1239,7 +1250,7 @@ extractClockResults <- function(clock_name) {
   all_results <- list()
   for (i in 1:5) {
     
-    temp <- fread(paste0("../data/vert_splits/vert_split_", i, ".csv"))
+    temp <- fread(paste0("data/vert_splits/vert_split_", i, ".csv"))
     temp <- as.data.frame(temp)
     rownames(temp) <- temp[, 1]
     temp[, 1] <- NULL
@@ -1452,8 +1463,8 @@ Checking CpG presence across samples and further filtering
 cpg_list <- readRDS("all_list.rds")
 
 # datasets containing old samples are -> GSE40279, GSE53740
-GSE40279 <- fread("../data/processed/GSE40279_pp.csv")
-GSE53740 <- fread("../data/processed/GSE53740_pp.csv")
+GSE40279 <- fread("data/pp_datasets/GSE40279_pp.csv")
+GSE53740 <- fread("data/pp_datasets/GSE53740_pp.csv")
 
 splits <- list.files("splits/")
 
@@ -1772,5 +1783,3 @@ print(temp)
 
 #rm(age_windows, cd_results, cd_results_df, EAA_results, EAA_results_long, model, sample_sizes, sample_sizes_widewindow_labels)
 ```
-
-

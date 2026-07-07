@@ -3,6 +3,11 @@ title: "Helper Functions"
 output: html_notebook
 ---
 
+```{r project-paths, include=FALSE}
+source(if (file.exists("project_paths.R")) "project_paths.R" else "../project_paths.R")
+set_project_root()
+```
+
 Libraries
 
 ```{r}
@@ -144,7 +149,7 @@ library(data.table)
 
 makeSplits <- function(cpg_list, full_metadata, valid_samples, sites_per_list, output_folder) {
   # List all preprocessed datasets
-  file_list <- list.files(path = "../data/processed")
+  file_list <- list.files(path = "data/pp_datasets")
   
   NUMCPGSITE <- length(cpg_list)
   num_groups <- ceiling(NUMCPGSITE/sites_per_list)
@@ -163,7 +168,7 @@ makeSplits <- function(cpg_list, full_metadata, valid_samples, sites_per_list, o
     temp <- data.frame(matrix(NA, nrow=length(template_sites), ncol=0), row.names = template_sites)
     
     for (j in 1:length(file_list)) {
-      df <- fread(paste0("../data/processed/", file_list[j]))
+      df <- fread(paste0("data/pp_datasets/", file_list[j]))
       print(paste0("Looking at dataset: ", file_list[j]))
       df <- as.data.frame(df)
       rownames(df) <- df[, 1]
@@ -244,7 +249,7 @@ generateMatrix <- function(input_folder, cpg_list, full_metadata, gender, averag
     rownames(temp) <- temp[, 1]
     temp <- temp[, -1]
     
-    valid_samples <- readRDS("../intermediates/valid_samples.rds")
+    valid_samples <- readRDS("intermediates/valid_samples.rds")
     
     if (gender=="male") {
       male_samples <- full_metadata[full_metadata$gender=="male" | full_metadata$gender=="Male", ]$sample_id
@@ -317,11 +322,11 @@ Make vert chunks (used in scenarios where we want it split by sites and not samp
 
 ```{r}
 # Reformat splits from (50000 sites x all samples) to (all sites x 1000 samples) to ensure that samples have all available sites for EAA calculation
-file_list <- list.files(path="../data/splits")
+file_list <- list.files(path="data/splits")
 
 all_data <- data.table()
 chunk_size <- 1000
-temp <- fread("../data/splits/split_1.csv", nrows = 1)
+temp <- fread("data/splits/split_1.csv", nrows = 1)
 total_columns <- ncol(temp) - 1  # Adjust for removed first column
 num_chunks <- ceiling(total_columns / chunk_size)
 
@@ -330,7 +335,7 @@ for (chunk_index in 1:num_chunks) {
   
   for (i in 1:length(file_list)) {
     # Read the current file
-    temp <- fread(paste0("../data/splits/split_", i, ".csv"))
+    temp <- fread(paste0("data/splits/split_", i, ".csv"))
 
     # Remove the first row (age information)
     temp <- temp[-1, ]
@@ -354,7 +359,7 @@ for (chunk_index in 1:num_chunks) {
     }
   }
   # Save the combined chunk data to a temporary file
-  fwrite(chunk_data, paste0("../data/vert_splits/vert_split_", chunk_index, ".csv"))
+  fwrite(chunk_data, paste0("data/vert_splits/vert_split_", chunk_index, ".csv"))
 }
 ```
 
@@ -365,7 +370,7 @@ specify seg_start and seg_end for additional annotation (regression line of a wi
 set.seed(123)
 # Create split lists
 # Read desired site list
-sites <- readRDS("../intermediates/site_list_by_samples.rds")
+sites <- readRDS("intermediates/site_list_by_samples.rds")
 cpg_list <- rownames(sites)
 NUMCPGSITE <- length(cpg_list)
 sites_per_list <- 50000
@@ -384,7 +389,7 @@ plotCpG <- function(cpg_list, gender_state, seg_start, seg_end) {
   
   # Check which split to extract from in my files
   for (cpg_name in cpg_list) {
-    splits <- list.files(path="../data/splits")
+    splits <- list.files(path="data/splits")
     
     # Find which split
     num <- 0
@@ -393,7 +398,7 @@ plotCpG <- function(cpg_list, gender_state, seg_start, seg_end) {
         num <- i
       }
     }
-    temp <- fread(paste0("../data/splits/split_", num, ".csv"))
+    temp <- fread(paste0("data/splits/split_", num, ".csv"))
     temp <- as.data.frame(temp)
     
     rownames(temp) <- temp$V1
@@ -439,7 +444,7 @@ Additional dependencies needed in Preproc
 
 ```{r}
 # Read standard CpG site list to be used (not until matrix has been generated then filtered)
-ann <- read.table("../data/ref/HM450.hg38.manifest.tsv", sep="\t", header=TRUE, quote="", comment.char="", fileEncoding = "UTF-8")
+ann <- read.table("data/ref/HM450.hg38.manifest.tsv", sep="\t", header=TRUE, quote="", comment.char="", fileEncoding = "UTF-8")
 standard_cpg_list <- ann$probeID
 
 # ggplot parameters here
@@ -481,28 +486,28 @@ theme_and_axis_legend <- theme(
 )
 
 # Get clock sites
-Hannum_CpGs <- read_excel("../data/ref/CpGsToInvestigate/hannum_cpgs.xlsx")
+Hannum_CpGs <- read_excel("data/ref/CpGsToInvestigate/hannum_cpgs.xlsx")
 Hannum_CpGs <- Hannum_CpGs$Marker #71
-Levine_CpGs <- read.csv("../data/ref/CpGsToInvestigate/levine_cpgs.csv", stringsAsFactors=FALSE)
+Levine_CpGs <- read.csv("data/ref/CpGsToInvestigate/levine_cpgs.csv", stringsAsFactors=FALSE)
 Levine_CpGs <- Levine_CpGs[-1, ]
 Levine_CpGs <- Levine_CpGs$CpG #513
-Horvath_CpGs <- read.csv("../data/ref/CpGsToInvestigate/horvath_cpgs.csv", stringsAsFactors=FALSE)
+Horvath_CpGs <- read.csv("data/ref/CpGsToInvestigate/horvath_cpgs.csv", stringsAsFactors=FALSE)
 Horvath_CpGs <- Horvath_CpGs[-(1:3), 1, drop=FALSE]
 Horvath_CpGs <- Horvath_CpGs[, 1] #353
-McEwen_CpGs <- read.csv("../data/ref/CpGsToInvestigate/mcewen_cpgs.csv")
+McEwen_CpGs <- read.csv("data/ref/CpGsToInvestigate/mcewen_cpgs.csv")
 McEwen_CpGs <- McEwen_CpGs$CPG #94
-Wu_CpGs <- read_excel("../data/ref/CpGsToInvestigate/aging-11-102399-s003..xlsx")
+Wu_CpGs <- read_excel("data/ref/CpGsToInvestigate/aging-11-102399-s003..xlsx")
 Wu_CpGs <- Wu_CpGs[-1, ]
 Wu_CpGs <- Wu_CpGs$CpGs #111
 Belsky_CpGs <- getRequiredProbes(backgroundList=FALSE)
 Belsky_CpGs <- unlist(Belsky_CpGs) #173
-load("../data/ref/CpGsToInvestigate/epitoc.Rd")
+load("data/ref/CpGsToInvestigate/epitoc.Rd")
 Teschendorff_CpGs <- as.data.frame(dataETOC2.l[1])
 Teschendorff_CpGs <- rownames(Teschendorff_CpGs) #163
-Shireby_CpGs <- readLines("../data/ref/CpGsToInvestigate/CorticalClockCoefs.txt")[-1]
+Shireby_CpGs <- readLines("data/ref/CpGsToInvestigate/CorticalClockCoefs.txt")[-1]
 Shireby_CpGs <- sapply(strsplit(Shireby_CpGs, " "), `[`, 1)
 Shireby_CpGs <- unlist(Shireby_CpGs) #347
-Lu2_CpGs <- read_excel("../data/ref/CpGsToInvestigate/lu2.xlsx")
+Lu2_CpGs <- read_excel("data/ref/CpGsToInvestigate/lu2.xlsx")
 Lu2_CpGs <- rbind(colnames(Lu2_CpGs), Lu2_CpGs)
 Lu2_CpGs <- Lu2_CpGs[, 1]
 Lu2_CpGs <- as.character(Lu2_CpGs[[1]]) #140
@@ -526,11 +531,11 @@ print(paste0("Total Unique CpG sites from 9 clocks explored: ", length(cpgs)))
 #write.csv(cpgs, "7_3_overlap.csv")
 
 # Filter for clock sites above threshold
-filtered_sites <- readRDS("../intermediates/POST_sites.rds")
+filtered_sites <- readRDS("intermediates/POST_sites.rds")
 
 # 1100 clock cpgs only
 filtered_clock_cpgs <- cpgs[cpgs %in% filtered_sites]
-saveRDS(filtered_clock_cpgs, "../intermediates/POST_clock_sites.rds")
+saveRDS(filtered_clock_cpgs, "intermediates/POST_clock_sites.rds")
 
 
 for (i in 1:length(clock_cpgs)) {
@@ -546,4 +551,3 @@ clock_upset_grob <- grid.grabExpr({
   draw(UpSet(m1, set_order = rownames(m1), pt_size = unit(1.5, "mm"), lwd=1))
 })
 ```
-

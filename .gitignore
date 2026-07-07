@@ -1,13 +1,35 @@
-*
+# R and RStudio state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
 
-!.gitignore
-!README.md
-!Preproc.Rmd
-!PreprocHelpers.Rmd
-!Filtering.Rmd
-!FilterHelpers.Rmd
-!Clustering.Rmd
-!ClusteringHelpers.Rmd
+# Rendered notebook output
+*.nb.html
+*.utf8.md
+*_cache/
+*_files/
 
-!*/
-.Rproj.user
+# Local source data and generated matrices
+data/Raw/
+data/pp_datasets/
+data/matrix/
+data/splits/
+
+# Generated checkpoints and scratch output
+intermediates/
+new_figs/
+figs/
+relevant_rds/
+
+# Local manuscript and exploratory archives
+manuscript/
+Other/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Keep documentation placeholders in otherwise ignored directories
+!data/README.md
+!fig_repository/README.md

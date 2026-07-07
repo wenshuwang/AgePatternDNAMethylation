@@ -1,25 +1,102 @@
-# **Age-Related Patterns of DNA Methylation Changes**
+# Age-Related Patterns of DNA Methylation Changes
 
-*Click [here](https://www.biorxiv.org/content/10.1101/2024.12.10.627727v2) to view the latest version of the manuscript!*
+Analysis code accompanying the manuscript [Age-Related Patterns of DNA
+Methylation Changes](https://www.biorxiv.org/content/10.1101/2024.12.10.627727v2).
 
-## Abstract:
+## Study overview
 
-Epigenetic clocks have achieved significant success in aging research, but they often assume linear methylation changes with age and lack biological interpretability. Using data from 4,641 samples across 23 GEO datasets, we analyzed 1,557 CpGs from nine widely used clocks with minimal overlap, and identified consistent age-associated methylation patterns. We then identified 19,432 age-associated CpGs (aaCpGs) that were strongly correlated with age and showed high consistency between sexes, with faster methylation changes observed in males. Most aaCpGs were identified during early and late life stages, indicating accelerated epigenetic changes during development and aging. No specific genomic enrichment was observed. Clustering analysis revealed four distinct, non-linear age-related methylation trajectories. These findings underscore the complexity of epigenetic aging and suggest that current clocks may overlook important dynamic patterns, particularly after age 65. Incorporating these insights could improve the accuracy and biological relevance of future epigenetic clocks, especially for use across diverse age ranges and populations.
+This project analyzes DNA methylation measurements from 4,641 samples across
+23 GEO datasets. It compares CpGs used by nine epigenetic clocks, identifies
+age-associated CpGs, examines sex-specific differences, and clusters
+non-linear methylation trajectories.
 
-### Brief Overview of Pipeline:
+## Repository layout
 
-1.  PreprocHelpers.Rmd -\> Preproc.Rmd *(Supp. Fig 1, Supp. Fig 2, Supp. Fig 5)*
+```text
+.
+|-- README.md
+|-- ClusteringHelpers.Rmd     # functions and dependencies for clustering
+|-- Clustering.Rmd            # clustering analysis and Figures 2 and 5
+|-- scripts/
+|   |-- PreprocHelpers.Rmd    # preprocessing functions and dependencies
+|   |-- Preproc.Rmd           # preprocessing and supplementary figures
+|   |-- FilterHelpers.Rmd     # filtering functions and dependencies
+|   `-- Filtering.Rmd         # filtering, tables, and manuscript figures
+|-- data/
+|   `-- README.md             # expected input-data layout
+|-- fig_repository/           # final manuscript figures
+`-- extra/                    # archived exploratory and superseded analyses
+```
 
-2.  FilterHelpers.Rmd -\> Filtering.Rmd *(Supp. Fig 3, Supp. Fig 4, Table 1, Fig. 3, Fig. 4)*
+Large datasets and generated intermediate files are intentionally not included
+in the repository. See `data/README.md` for the expected local layout.
 
-3.  ClusteringHelpers.Rmd -\> Clustering.Rmd *(Fig. 2, Fig. 5)*
+## Pipeline order
 
-Each "Helper" file should be fun before running the main chunk to ensure dependencies are all loaded
+Run notebooks in this order:
 
-Code is written in chunks such that intermediate files are saved to disk to allow for resuming from any point
+1. `scripts/PreprocHelpers.Rmd`, then `scripts/Preproc.Rmd`
+2. `scripts/FilterHelpers.Rmd`, then `scripts/Filtering.Rmd`
+3. `ClusteringHelpers.Rmd`, then `Clustering.Rmd`
 
-## Contact:
+The helper notebook for each stage defines the functions, packages, and shared
+objects used by the analysis notebook. Run every chunk in the helper before
+running the corresponding analysis notebook. The analysis is deliberately
+split into chunks and writes checkpoints so a long run can be resumed.
 
-[kchen24\@stanford.edu](mailto:kchen24@stanford.edu){.email}
+## Working directories
 
-Last updated: 6/16/2025
+The preprocessing and filtering notebooks use paths relative to `scripts/`.
+Open those notebooks from that directory. The clustering notebooks use paths
+relative to the repository root. Changing the working directory will cause
+input-file errors.
+
+## Local folders
+
+Create these untracked folders before running the analysis:
+
+```text
+data/Raw/                 one folder per GEO accession
+data/pp_datasets/         standardized datasets
+data/matrix/              age-by-CpG matrices
+data/ref/                 manifests and clock reference files
+data/splits/              temporary matrix splits
+intermediates/            saved R objects and checkpoints
+relevant_rds/             filtering results and downstream R objects
+fig_repository/           final manuscript figures
+```
+
+Every active notebook loads `project_paths.R` first and resolves paths from the
+repository root. The code therefore uses the same locations whether a notebook
+is opened from the root or from `scripts/`.
+
+Each `data/Raw/GSE<accession>/` folder is expected to contain
+`methylation_data.csv` and `metadata.csv`. A `cleaned_metadata.csv` file may
+also be present, but preprocessing deliberately starts from `metadata.csv`.
+
+## Reproducibility notes
+
+- Raw GEO and reference data are not bundled in this archive.
+- The supplied `relevant_rds` folder contains the three filtering-result objects.
+  Later filtering chunks generate additional RDS objects needed by clustering.
+- Clock definitions and the HM450 manifest under `data/ref/` were not included
+  in the supplied downloads and must be provided separately.
+- The notebooks require R plus CRAN and Bioconductor packages loaded in the
+  helper notebooks.
+- Some steps are computationally intensive and were designed to resume from
+  saved `.rds` files.
+- `extra/` is retained for provenance, but it is not part of the current
+  three-stage pipeline.
+
+## Manuscript outputs
+
+- Preprocessing: Supplementary Figures 1, 2, and 5
+- Filtering: Supplementary Figures 3 and 4; Table 1; Figures 3 and 4
+- Clustering: Figures 2 and 5
+
+## Contact
+
+Questions about the scientific analysis: [kchen24@stanford.edu](mailto:kchen24@stanford.edu)
+
+Repository documentation reorganized July 2026. Scientific analysis code and
+reported results were not altered by this documentation cleanup.

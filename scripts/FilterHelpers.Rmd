@@ -3,6 +3,11 @@ title: "FilterHelpers"
 output: html_notebook
 ---
 
+```{r project-paths, include=FALSE}
+source(if (file.exists("project_paths.R")) "project_paths.R" else "../project_paths.R")
+set_project_root()
+```
+
 Libraries
 
 ```{r}
@@ -280,5 +285,4 @@ convert_to_list_format <- function(significant_counts) {
   return(result_list)
 }
 ```
-
 

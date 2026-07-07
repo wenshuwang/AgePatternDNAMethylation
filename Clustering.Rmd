@@ -1,11 +1,16 @@
 ---
-title: "Clustering
+title: "Clustering"
 output: html_notebook
 ---
 
+```{r project-paths, include=FALSE}
+source("project_paths.R")
+set_project_root()
+```
+
 ```{r}
 clocks <- c("McEwen", "Wu", "Hannum", "Horvath", "Levine", "Belsky", "Teschendorff", "Shireby", "Lu")
-selected_clock_cpgs <- readRDS("clock_cpgs.rds")
+selected_clock_cpgs <- readRDS("relevant_rds/clock_cpgs.rds")
 clock_annotations <- matrix(0,
   nrow = length(selected_clock_cpgs),
   ncol = length(clocks),
@@ -18,7 +23,7 @@ for(j in seq_along(clocks)) {
   clock_annotations[hits, this_clock] <- 1
 }
 
-correct_order <- readRDS("correct_order.rds") # is this the correct order before or after ordering??
+correct_order <- readRDS("relevant_rds/correct_order.rds") # is this the correct order before or after ordering??
 clock_annotations <- clock_annotations[correct_order, ]
 
 df_ann <- as.data.frame(clock_annotations, stringsAsFactors = FALSE)
@@ -107,7 +112,7 @@ UNUSED BELOW
 library(circlize)
 library(gridBase)
 
-ann <- read.table("HM450.hg38.manifest.tsv", sep="\t", header=TRUE, quote="", comment.char="", fileEncoding = "UTF-8")
+ann <- read.table("data/ref/HM450.hg38.manifest.tsv", sep="\t", header=TRUE, quote="", comment.char="", fileEncoding = "UTF-8")
 ann <- ann[!is.na(ann$CpG_chrm) & !is.na(ann$CpG_beg) & !is.na(ann$CpG_end), ]
 rownames(ann) <- ann$probeID
 #earlyagegroup <- four_cluster_select[four_cluster_select$Cluster==1 | four_cluster_select$Cluster==3, ]
@@ -115,9 +120,9 @@ rownames(ann) <- ann$probeID
 
 #oldagegroup <- four_cluster_select[four_cluster_select$Cluster==2 | four_cluster_select$Cluster==4, ]
 #oldcpgs <- rownames(oldagegroup)
-all_aaCpGs <- readRDS("all_select_cpg.rds")
-male_aaCpGs <- readRDS("male_select_cpg.rds")
-female_aaCpGs <- readRDS("female_select_cpg.rds")
+all_aaCpGs <- readRDS("relevant_rds/all_select_cpg.rds")
+male_aaCpGs <- readRDS("relevant_rds/male_select_cpg.rds")
+female_aaCpGs <- readRDS("relevant_rds/female_select_cpg.rds")
 
 K450 <- ann[, 1:3]
 colnames(K450) <- c("chr", "start", "end")
@@ -170,4 +175,3 @@ upViewport()
 draw(lgd_list_vertical, x = circle_size, just = "left")
 dev.off()
 ```
-
