@@ -1093,10 +1093,9 @@ ggsave(
   dpi    = 300
 )
 
-# 4641 valid samples here
-# examining the plots, I will choose a threshold of 90% samples, which is 4176 samples
+# Keep CpGs present in at least 18 of 23 datasets (~75%), matching the manuscript cutoff.
 
-filtered_sites <- site_list_by_samples[site_list_by_samples$Count >= 4176, , drop=FALSE]
+filtered_sites <- running_site_list[running_site_list$Count >= 18, , drop=FALSE]
 filtered_sites <- rownames(filtered_sites)
 saveRDS(filtered_sites, "intermediates/POST_sites.rds")
 
