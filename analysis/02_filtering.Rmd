@@ -265,10 +265,19 @@ saveRDS(all_cpg, "relevant_rds/all_select_cpg.rds")
 saveRDS(male_cpg, "relevant_rds/male_select_cpg.rds")
 saveRDS(female_cpg, "relevant_rds/female_select_cpg.rds")
 
+clock_sites <- if (file.exists("relevant_rds/clock_cpgs.rds")) {
+  readRDS("relevant_rds/clock_cpgs.rds")
+} else if (file.exists("intermediates/POST_clock_sites.rds")) {
+  readRDS("intermediates/POST_clock_sites.rds")
+} else {
+  warning("No clock CpG list found; continuing with an empty clock-site list.")
+  character()
+}
+
 a <- intersect(clock_sites, all_cpg)
 b <- intersect(clock_sites, male_cpg)
 c <- intersect(clock_sites, female_cpg)
-length(unique(a, unique(b, c)))
+length(unique(c(a, b, c)))
 ```
 
 UpSet plots + 3C scatterplots (fig 3 overall)
@@ -285,7 +294,7 @@ p1 <- grid.grabExpr({
 all_cpg   <- readRDS("relevant_rds/all_select_cpg.rds")
 male_cpg  <- readRDS("relevant_rds/male_select_cpg.rds")
 female_cpg<- readRDS("relevant_rds/female_select_cpg.rds")
-clock_cpg <- readRDS("relevant_rds/clock_cpgs.rds")
+clock_cpg <- clock_sites
 
 upset2list <- list("All aaCpGs"    = all_cpg, 
                    "Male aaCpGs"   = male_cpg,
