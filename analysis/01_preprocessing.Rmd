@@ -1093,11 +1093,28 @@ ggsave(
   dpi    = 300
 )
 
-# Keep CpGs present in at least 18 of 23 datasets (~75%), matching the manuscript cutoff.
+# The manuscript reports the number of CpGs present in at least 18 of the
+# 23 datasets. Save that dataset-coverage result separately so it is not
+# confused with the stricter sample-coverage list used downstream.
+dataset_presence_sites <- rownames(running_site_list)[
+  running_site_list$Count >= 18
+]
+saveRDS(
+  dataset_presence_sites,
+  "intermediates/POST_sites_18of23_datasets.rds"
+)
 
-filtered_sites <- running_site_list[running_site_list$Count >= 18, , drop=FALSE]
-filtered_sites <- rownames(filtered_sites)
-saveRDS(filtered_sites, "intermediates/POST_sites.rds")
+# Reproduce the original downstream analysis: retain CpGs measured in at
+# least 4,176 of the 4,641 valid samples (90%). Matrix generation and the
+# filtering analysis continue to read this list from POST_sites.rds.
+analysis_sites <- rownames(site_list_by_samples)[
+  site_list_by_samples$Count >= 4176
+]
+saveRDS(
+  analysis_sites,
+  "intermediates/POST_sites_4176_samples.rds"
+)
+saveRDS(analysis_sites, "intermediates/POST_sites.rds")
 
 # BELOW CODE IS FOR BY-DATASET FILTERINg
 # load clock sites and filter again
