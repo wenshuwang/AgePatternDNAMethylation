@@ -23,6 +23,9 @@ analysis_input_files <- function(archived_dir = project_file("comparison", "kevi
   list(
     local = list(
       post_sites = project_file("intermediates", "POST_sites.rds"),
+      dataset_presence_sites = project_file(
+        "intermediates", "POST_sites_18of23_datasets.rds"
+      ),
       matrices = c(
         all_mean = project_file("data", "matrix", "allTRUE.csv"),
         all_sd = project_file("data", "matrix", "allFALSE.csv"),
@@ -45,6 +48,67 @@ analysis_input_files <- function(archived_dir = project_file("comparison", "kevi
         female_mean = file.path(archived_dir, "femaleTRUE_OG.csv"),
         female_sd = file.path(archived_dir, "femaleFALSE_OG.csv")
       )
+    )
+  )
+}
+
+validate_local_inputs <- function(specification) {
+  missing <- required_input_paths(specification)[
+    !file.exists(required_input_paths(specification))
+  ]
+  if (length(missing)) {
+    stop(
+      "Local analysis mode is missing required files:\n- ",
+      paste(missing, collapse = "\n- ")
+    )
+  }
+
+  filtered_sites <- normalize_site_ids(
+    readRDS(specification$post_sites),
+    "Local POST_sites.rds"
+  )
+  dataset_presence_sites <- normalize_site_ids(
+    readRDS(specification$dataset_presence_sites),
+    "Local POST_sites_18of23_datasets.rds"
+  )
+
+  if (length(dataset_presence_sites) != 393628L) {
+    stop(
+      "Local dataset-coverage list has ", length(dataset_presence_sites),
+      " CpGs; the original raw run requires 393,628."
+    )
+  }
+  if (length(filtered_sites) != 256529L) {
+    stop(
+      "Local downstream list has ", length(filtered_sites),
+      " CpGs; the original raw run requires 256,529."
+    )
+  }
+  if (!all(filtered_sites %in% dataset_presence_sites)) {
+    stop("Local downstream CpGs are not all present in the 18-of-23 dataset list.")
+  }
+
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("The data.table package is required to validate local matrices.")
+  }
+  for (matrix_path in specification$matrices) {
+    matrix_sites <- as.character(
+      data.table::fread(matrix_path, select = 1L, showProgress = FALSE)[[1L]]
+    )
+    if (!identical(matrix_sites, filtered_sites)) {
+      stop(
+        "Matrix rows do not match local POST_sites.rds: ", matrix_path,
+        ". Rebuild the matrices from the validated raw preprocessing outputs."
+      )
+    }
+  }
+
+  list(
+    filtered_sites = filtered_sites,
+    dataset_presence_sites = dataset_presence_sites,
+    observed_counts = c(
+      dataset_18_of_23 = length(dataset_presence_sites),
+      analysis_sites = length(filtered_sites)
     )
   )
 }
@@ -125,7 +189,9 @@ resolve_analysis_inputs <- function(
   archived_ready <- all(file.exists(required_input_paths(files$archived)))
 
   if (mode == "auto") {
-    mode <- if (archived_ready) "archived" else if (local_ready) "local" else ""
+    # A complete fresh/local run is the default. Archived files are only a
+    # fallback when the locally generated matrices do not exist.
+    mode <- if (local_ready) "local" else if (archived_ready) "archived" else ""
     if (!nzchar(mode)) {
       stop(
         "No complete filtering input set was found. Provide either:\n",
@@ -150,29 +216,16 @@ resolve_analysis_inputs <- function(
     ))
   }
 
-  missing <- required_input_paths(files$local)[
-    !file.exists(required_input_paths(files$local))
-  ]
-  if (length(missing)) {
-    stop(
-      "Local analysis mode is missing required files:\n- ",
-      paste(missing, collapse = "\n- ")
-    )
-  }
-
-  filtered_sites <- normalize_site_ids(
-    readRDS(files$local$post_sites),
-    "Local POST_sites.rds"
-  )
+  validation <- validate_local_inputs(files$local)
   message(
-    "Analysis input mode: local matrices (", length(filtered_sites),
-    " downstream CpGs)."
+    "Analysis input mode: validated local raw-data run ",
+    "(393,628 dataset-coverage CpGs; 256,529 downstream CpGs)."
   )
   list(
     mode = mode,
     matrices = files$local$matrices,
-    filtered_sites = filtered_sites,
-    dataset_presence_sites = NULL,
-    counts = c(analysis_sites = length(filtered_sites))
+    filtered_sites = validation$filtered_sites,
+    dataset_presence_sites = validation$dataset_presence_sites,
+    counts = validation$observed_counts
   )
 }

@@ -6,6 +6,7 @@ output: html_notebook
 ```{r project-paths, include=FALSE}
 source(if (file.exists("R/project_paths.R")) "R/project_paths.R" else "../R/project_paths.R")
 set_project_root()
+source("R/preprocessing_core.R")
 ```
 
 Libraries
@@ -325,7 +326,7 @@ generateMatrix <- function(input_folder, cpg_list, full_metadata, gender, averag
 
 Make vert chunks (used in scenarios where we want it split by sites and not samples)
 
-```{r}
+```{r make-vertical-splits, eval=FALSE, purl=FALSE}
 # Reformat splits from (50000 sites x all samples) to (all sites x 1000 samples) to ensure that samples have all available sites for EAA calculation
 file_list <- list.files(path="data/splits")
 

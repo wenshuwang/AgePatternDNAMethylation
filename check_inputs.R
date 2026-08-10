@@ -40,7 +40,7 @@ check_project_status <- function() {
     cat("- Ready\n")
     cat("- Selected mode:", analysis_inputs$mode, "\n")
     cat("- Downstream CpGs:", length(analysis_inputs$filtered_sites), "\n")
-    if (analysis_inputs$mode == "archived") {
+    if (!is.null(analysis_inputs$dataset_presence_sites)) {
       cat("- Dataset-coverage CpGs:",
           length(analysis_inputs$dataset_presence_sites), "\n")
     }

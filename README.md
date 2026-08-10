@@ -20,6 +20,17 @@ Each stage has a `_helpers.Rmd` notebook that must be run before its matching
 analysis notebook. For example, run `01_preprocessing_helpers.Rmd` before
 `01_preprocessing.Rmd`.
 
+For a complete reproduction directly from the 23 raw datasets, the simplest
+entry point is:
+
+```r
+source("run_preprocessing.R")
+```
+
+That command rebuilds the preprocessing checkpoints, 10 horizontal split
+files, and all six mean/SD matrices. It does not read anything from
+`comparison/kevin_old/`.
+
 ## Repository map
 
 ```text
@@ -31,6 +42,7 @@ analysis notebook. For example, run `01_preprocessing_helpers.Rmd` before
 |-- relevant_rds/         generated R checkpoints (not tracked by Git)
 |-- fig_repository/       final manuscript figures
 |-- archive/              exploratory and superseded analyses
+|-- run_preprocessing.R   exact raw-data preprocessing entry point
 |-- check_inputs.R        reports missing required inputs
 `-- REORGANIZATION_NOTES.md
 ```
@@ -62,6 +74,30 @@ data/
 The notebooks locate the repository root through `R/project_paths.R`, so their
 data paths do not depend on the directory from which they are opened.
 
+## Rebuilding from raw data
+
+`run_preprocessing.R` uses the raw methylation tables and metadata to derive
+the eligible 0-80-year-old samples and CpG coverage counts from scratch. It
+stops before the expensive split/matrix work unless the raw inputs reproduce
+all original checkpoints:
+
+- 486,427 rows in `running_site_list.rds` (including 850 liftover artifacts
+  with missing counts)
+- 485,577 standard HM450 probes in `site_list_by_samples.rds`
+- 393,628 CpGs present in at least 18 of 23 datasets
+- 256,529 CpGs measured in at least 4,176 valid samples
+- 4,641 valid samples
+
+The 393,628-site manuscript checkpoint is saved as
+`intermediates/POST_sites_18of23_datasets.rds`. The downstream matrix
+background is the distinct 256,529-site list saved as
+`intermediates/POST_sites.rds`.
+
+Reproducing these exact counts still requires the same raw tables, metadata
+edits, and HM450 manifest used for the original analysis. A count mismatch is
+reported explicitly rather than being hidden or replaced with Kevin's saved
+list.
+
 ## Starting from archived original results
 
 Raw data are only required to rerun preprocessing. Filtering can instead
@@ -71,9 +107,10 @@ files in `comparison/kevin_old/` using the layout documented in
 
 Filtering selects inputs as follows:
 
-1. If the complete archived-original set exists, validate and use it.
-2. Otherwise, use local matrices under `data/matrix/` with
-   `intermediates/POST_sites.rds`.
+1. If locally generated matrices and both validated `POST_sites` lists exist,
+   use them after checking their counts and matrix row identities.
+2. Otherwise, if the complete archived-original set exists, validate and use
+   it.
 3. Stop with a clear missing-file report if neither set is complete.
 
 The archived validation requires the original counts of 393,628 CpGs present
