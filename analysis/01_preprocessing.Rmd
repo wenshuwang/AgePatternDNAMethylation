@@ -1097,7 +1097,7 @@ ggsave(
 # 23 datasets. Save that dataset-coverage result separately so it is not
 # confused with the stricter sample-coverage list used downstream.
 dataset_presence_sites <- rownames(running_site_list)[
-  running_site_list$Count >= 18
+  which(!is.na(running_site_list$Count) & running_site_list$Count >= 18)
 ]
 saveRDS(
   dataset_presence_sites,
@@ -1108,7 +1108,7 @@ saveRDS(
 # least 4,176 of the 4,641 valid samples (90%). Matrix generation and the
 # filtering analysis continue to read this list from POST_sites.rds.
 analysis_sites <- rownames(site_list_by_samples)[
-  site_list_by_samples$Count >= 4176
+  which(!is.na(site_list_by_samples$Count) & site_list_by_samples$Count >= 4176)
 ]
 saveRDS(
   analysis_sites,
