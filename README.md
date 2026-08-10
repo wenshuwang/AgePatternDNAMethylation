@@ -27,6 +27,7 @@ analysis notebook. For example, run `01_preprocessing_helpers.Rmd` before
 |-- analysis/             numbered notebooks for the current pipeline
 |-- R/                    shared project-path utilities
 |-- data/                 local raw, processed, matrix, and reference data
+|-- comparison/           optional archived-original analysis inputs
 |-- relevant_rds/         generated R checkpoints (not tracked by Git)
 |-- fig_repository/       final manuscript figures
 |-- archive/              exploratory and superseded analyses
@@ -61,6 +62,37 @@ data/
 The notebooks locate the repository root through `R/project_paths.R`, so their
 data paths do not depend on the directory from which they are opened.
 
+## Starting from archived original results
+
+Raw data are only required to rerun preprocessing. Filtering can instead
+resume from the original saved checkpoints and matrices. Put the archived
+files in `comparison/kevin_old/` using the layout documented in
+[`comparison/README.md`](comparison/README.md).
+
+Filtering selects inputs as follows:
+
+1. If the complete archived-original set exists, validate and use it.
+2. Otherwise, use local matrices under `data/matrix/` with
+   `intermediates/POST_sites.rds`.
+3. Stop with a clear missing-file report if neither set is complete.
+
+The archived validation requires the original counts of 393,628 CpGs present
+in at least 18 of 23 datasets, 256,529 downstream CpGs, and 4,641 valid
+samples. This prevents an original CpG list from being silently combined with
+matrices produced from a different preprocessing run.
+
+When archived mode starts, filtering writes these two validated lists to
+`intermediates/POST_sites_18of23_datasets.rds` and
+`intermediates/POST_sites_4176_samples.rds`. It does not overwrite a locally
+rebuilt `intermediates/POST_sites.rds`.
+
+To override automatic selection for the current R session:
+
+```r
+Sys.setenv(AGEPATTERN_INPUT_MODE = "archived") # require original saved inputs
+Sys.setenv(AGEPATTERN_INPUT_MODE = "local")    # require locally generated inputs
+```
+
 ## Check inputs
 
 From the repository root, run:
@@ -69,8 +101,10 @@ From the repository root, run:
 source("check_inputs.R")
 ```
 
-The checker lists missing raw datasets, matrix files, and the three supplied
-filtering-result RDS files. It does not download anything.
+The checker reports preprocessing, filtering, and clustering readiness
+separately. Missing raw files do not block filtering when either a complete
+local matrix set or the archived-original input set is available. It does not
+download or modify anything.
 
 ## Main outputs
 

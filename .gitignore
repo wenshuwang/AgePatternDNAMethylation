@@ -21,6 +21,8 @@ intermediates/
 new_figs/
 figs/
 relevant_rds/
+comparison/*
+!comparison/README.md
 
 # Local manuscript and exploratory archives
 manuscript/

@@ -6,6 +6,24 @@ output: html_notebook
 ```{r project-paths, include=FALSE}
 source(if (file.exists("R/project_paths.R")) "R/project_paths.R" else "../R/project_paths.R")
 set_project_root()
+source("R/analysis_inputs.R")
+analysis_inputs <- resolve_analysis_inputs()
+
+dir.create("intermediates", showWarnings = FALSE, recursive = TRUE)
+dir.create("relevant_rds", showWarnings = FALSE, recursive = TRUE)
+
+# Archived-original mode recreates both named coverage checkpoints without
+# overwriting a locally rebuilt POST_sites.rds.
+if (analysis_inputs$mode == "archived") {
+  saveRDS(
+    analysis_inputs$dataset_presence_sites,
+    "intermediates/POST_sites_18of23_datasets.rds"
+  )
+  saveRDS(
+    analysis_inputs$filtered_sites,
+    "intermediates/POST_sites_4176_samples.rds"
+  )
+}
 ```
 
 ```{r}
@@ -16,9 +34,21 @@ set_project_root()
 # extractResults(avg_matrix_path, sd_matrix_path, sd_coeff_cutoff)
 # only parameter to be set is sd_coeff_cutoff, which is the coefficient for equation sqrt(Beta * (1 - Beta))
 
-all_results <- extractResults("data/matrix/allTRUE.csv", "data/matrix/allFALSE.csv", 0.5)
-male_results <- extractResultsParallel("data/matrix/maleTRUE.csv", "data/matrix/maleFALSE.csv", 0.5)
-female_results <- extractResultsParallel("data/matrix/femaleTRUE.csv", "data/matrix/femaleFALSE.csv", 0.5)
+all_results <- extractResults(
+  analysis_inputs$matrices[["all_mean"]],
+  analysis_inputs$matrices[["all_sd"]],
+  0.5
+)
+male_results <- extractResultsParallel(
+  analysis_inputs$matrices[["male_mean"]],
+  analysis_inputs$matrices[["male_sd"]],
+  0.5
+)
+female_results <- extractResultsParallel(
+  analysis_inputs$matrices[["female_mean"]],
+  analysis_inputs$matrices[["female_sd"]],
+  0.5
+)
 
 saveRDS(all_results, "relevant_rds/all_results.rds")
 saveRDS(male_results, "relevant_rds/male_results.rds")
@@ -204,7 +234,7 @@ ggsave("../fig_repository/supp_fig3.png", panel_grid, width=9, height=30, dpi=30
 # extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs_threshold_young, abs_threshold_old, sd_threshold, extra_filter=TRUE)
 
 
-filtered_list <- readRDS("intermediates/POST_sites.rds")
+filtered_list <- analysis_inputs$filtered_sites
 
 all_sig_counts    <- extract_sites(all_results,    filtered_list, "All",    0.6, 0.25, 0.25, 2, TRUE)
 male_sig_counts   <- extract_sites(male_results,   filtered_list, "Male",   0.6, 0.25, 0.25, 2, TRUE)
