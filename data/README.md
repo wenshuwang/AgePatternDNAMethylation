@@ -6,6 +6,7 @@ notebooks expect the following local directories:
 ```text
 data/
 |-- Raw/          # one folder per GEO accession
+|-- original_datasets/ # original oGSE beta matrices for the 18-of-23 rebuild
 |-- pp_datasets/  # standardized per-dataset CSV files
 |-- splits/       # horizontal matrix chunks
 |-- vert_splits/  # sample-oriented matrix chunks

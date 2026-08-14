@@ -12,6 +12,7 @@
 
 # Local source data and generated matrices
 data/Raw/
+data/original_datasets/
 data/pp_datasets/
 data/matrix/
 data/splits/

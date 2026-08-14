@@ -31,6 +31,23 @@ That command rebuilds the preprocessing checkpoints, 10 horizontal split
 files, and all six mean/SD matrices. It does not read anything from
 `comparison/kevin_old/`.
 
+To rebuild only the paper's 393,628-CpG dataset-presence checkpoint from the
+original source matrices, run:
+
+```r
+source("rebuild_18of23_sites.R")
+```
+
+Put the 20 `oGSE..._beta.csv/xlsx` files in `data/original_datasets/`; the
+remaining three Series Matrix files are downloaded from GEO. The script reads
+one input at a time, resumes from small checkpoints, and never reads Kevin's
+saved CpG lists. If the source files are elsewhere, set their folder first:
+
+```r
+Sys.setenv(AGEPATTERN_ORIGINAL_DATA_DIR = "C:/path/to/original_datasets")
+source("rebuild_18of23_sites.R")
+```
+
 ## Repository map
 
 ```text
@@ -43,6 +60,7 @@ files, and all six mean/SD matrices. It does not read anything from
 |-- fig_repository/       final manuscript figures
 |-- archive/              exploratory and superseded analyses
 |-- run_preprocessing.R   exact raw-data preprocessing entry point
+|-- rebuild_18of23_sites.R lightweight 18-of-23 CpG checkpoint rebuild
 |-- check_inputs.R        reports missing required inputs
 `-- REORGANIZATION_NOTES.md
 ```
