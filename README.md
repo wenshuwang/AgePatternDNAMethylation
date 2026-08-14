@@ -27,9 +27,12 @@ entry point is:
 source("run_preprocessing.R")
 ```
 
-That command rebuilds the preprocessing checkpoints, 10 horizontal split
-files, and all six mean/SD matrices. It does not read anything from
-`comparison/kevin_old/`.
+That command independently rebuilds the 393,628-site dataset-presence list,
+processes the raw beta values, recounts sample coverage from the resulting PP
+files using only the 4,641 valid samples, and then builds 10 horizontal split
+files and all six mean/SD matrices. It stops before split generation unless it
+reproduces both the 393,628-site and 256,529-site checkpoints. It does not read
+anything from `comparison/kevin_old/`.
 
 To rebuild only the paper's 393,628-CpG dataset-presence checkpoint from the
 original source matrices, run:

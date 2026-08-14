@@ -6,6 +6,11 @@ run_preprocessing <- function() {
     stop("Install the knitr package before running preprocessing: install.packages('knitr')")
   }
 
+  # First rebuild dataset-level probe presence directly from the 23 source
+  # matrices. The full preprocessing below must reproduce this independent
+  # 393,628-CpG checkpoint before split or matrix generation begins.
+  source("rebuild_18of23_sites.R", local = environment())
+
   # A reproduction run should stop before expensive split/matrix generation if
   # the raw inputs do not reproduce the manuscript checkpoints.
   old_count_option <- getOption("agepattern.require_original_counts")

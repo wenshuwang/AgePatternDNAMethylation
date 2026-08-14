@@ -987,6 +987,38 @@ full_metadata$age <- round(suppressWarnings(as.numeric(as.character(full_metadat
 full_metadata$gender <- normalizeGenderLabels(full_metadata$gender)
 valid_samples <- unique(as.character(valid_samples))
 
+# Recount sample coverage from the written PP files using only the 4,641
+# eligible samples. This keeps invalid/over-age sample columns from inflating
+# the 4,176-sample checkpoint and independently verifies the PP outputs.
+site_list_by_samples <- rebuildSampleCoverageFromPreprocessed(
+  pp_dir = project_file("data", "pp_datasets"),
+  valid_samples = valid_samples,
+  expected_sites = standard_cpg_list
+)
+
+# The lightweight source-matrix scan is run by run_preprocessing.R before this
+# notebook. Its dataset-presence counts must agree with the full raw-data run.
+independent_running_path <- project_file(
+  "intermediates", "running_site_list_from_original_inputs.rds"
+)
+if (!file.exists(independent_running_path)) {
+  stop("Missing independent 18-of-23 presence checkpoint: ", independent_running_path)
+}
+independent_running <- readRDS(independent_running_path)
+raw_18of23 <- rownames(running_site_list)[
+  which(!is.na(running_site_list$Count) & running_site_list$Count >= 18L)
+]
+independent_18of23 <- rownames(independent_running)[
+  which(!is.na(independent_running$Count) & independent_running$Count >= 18L)
+]
+if (!setequal(raw_18of23, independent_18of23)) {
+  stop(
+    "The full raw preprocessing and independent source-matrix scan disagree ",
+    "at the 18-of-23 CpG checkpoint."
+  )
+}
+running_site_list <- independent_running
+
 # Save stage-level checkpoints so preprocessing can resume without rereading
 # every raw methylation table.
 saveRDS(valid_samples, "intermediates/valid_samples.rds")

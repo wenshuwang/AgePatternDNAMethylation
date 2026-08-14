@@ -163,6 +163,98 @@ reportOriginalPreprocessingCounts <- function(
   invisible(list(lists = lists, observed = observed, expected = expected))
 }
 
+rebuildSampleCoverageFromPreprocessed <- function(
+    pp_dir = project_file("data", "pp_datasets"),
+    valid_samples,
+    expected_sites = NULL
+) {
+  pp_files <- list.files(
+    pp_dir,
+    pattern = "_pp\\.csv$",
+    full.names = TRUE
+  )
+  if (length(pp_files) != 23L) {
+    stop("Expected 23 preprocessed datasets under ", pp_dir,
+         "; found ", length(pp_files), ".")
+  }
+
+  valid_samples <- unique(as.character(valid_samples))
+  valid_samples <- valid_samples[!is.na(valid_samples) & nzchar(valid_samples)]
+  if (!length(valid_samples)) stop("valid_samples is empty.")
+
+  total_counts <- NULL
+  counted_samples <- character(0)
+
+  for (file_index in seq_along(pp_files)) {
+    path <- pp_files[[file_index]]
+    header <- names(data.table::fread(path, nrows = 0L, check.names = FALSE))
+    selected_samples <- intersect(header[-1L], valid_samples)
+    counted_samples <- c(counted_samples, selected_samples)
+    message(
+      "Sample coverage ", file_index, "/", length(pp_files), ": ",
+      basename(path), " (", length(selected_samples), " valid samples)"
+    )
+
+    dataset <- data.table::fread(
+      path,
+      select = c(header[[1L]], selected_samples),
+      na.strings = c("NA", ""),
+      check.names = FALSE,
+      showProgress = TRUE
+    )
+    probe_ids <- as.character(dataset[[1L]])
+    dataset[[1L]] <- NULL
+    if (anyNA(probe_ids) || any(!nzchar(probe_ids)) || anyDuplicated(probe_ids)) {
+      stop("Missing, blank, or duplicated probe IDs in ", basename(path), ".")
+    }
+
+    sample_counts <- integer(length(probe_ids))
+    if (ncol(dataset)) {
+      for (column_index in seq_len(ncol(dataset))) {
+        sample_counts <- sample_counts + !is.na(dataset[[column_index]])
+      }
+    }
+
+    if (is.null(total_counts)) {
+      total_counts <- sample_counts
+      names(total_counts) <- probe_ids
+    } else {
+      destination <- match(probe_ids, names(total_counts))
+      if (anyNA(destination) || length(destination) != length(total_counts)) {
+        stop("PP probe rows differ in ", basename(path), ".")
+      }
+      total_counts[destination] <- total_counts[destination] + sample_counts
+    }
+
+    rm(dataset, probe_ids, sample_counts)
+    gc()
+  }
+
+  if (anyDuplicated(counted_samples)) {
+    duplicated_ids <- unique(counted_samples[duplicated(counted_samples)])
+    stop(
+      "Valid sample IDs occur in more than one PP dataset: ",
+      paste(head(duplicated_ids, 10L), collapse = ", ")
+    )
+  }
+  missing_samples <- setdiff(valid_samples, counted_samples)
+  if (length(missing_samples)) {
+    stop(
+      "The PP datasets are missing valid samples:\n- ",
+      paste(missing_samples, collapse = "\n- ")
+    )
+  }
+
+  if (!is.null(expected_sites)) {
+    expected_sites <- as.character(expected_sites)
+    if (!identical(names(total_counts), expected_sites)) {
+      stop("PP probe rows do not match the expected HM450 probe order.")
+    }
+  }
+
+  data.frame(Count = as.integer(total_counts), row.names = names(total_counts))
+}
+
 makeSplits <- function(cpg_list, full_metadata, valid_samples, sites_per_list, output_folder) {
   file_list <- list.files(
     project_file("data", "pp_datasets"),
