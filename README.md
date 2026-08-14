@@ -28,11 +28,26 @@ source("run_preprocessing.R")
 ```
 
 That command independently rebuilds the 393,628-site dataset-presence list,
-processes the raw beta values, recounts sample coverage from the resulting PP
-files using only the 4,641 valid samples, and then builds 10 horizontal split
-files and all six mean/SD matrices. It stops before split generation unless it
+rebuilds all 23 canonical PP files one dataset at a time, and recounts sample
+coverage using only the 4,641 valid samples. It is resumable and stops after it
 reproduces both the 393,628-site and 256,529-site checkpoints. It does not read
 anything from `comparison/kevin_old/`.
+
+The first 20 original beta matrices can be kept outside the repository. Set
+their folder before starting; the remaining three Series Matrix files are
+downloaded from GEO:
+
+```r
+Sys.setenv(AGEPATTERN_ORIGINAL_DATA_DIR = "C:/path/to/original_datasets")
+source("run_preprocessing.R")
+```
+
+After the PP rebuild passes, and only after confirming there is enough disk
+space for the large split files, continue with:
+
+```r
+source("continue_preprocessing.R")
+```
 
 To rebuild only the paper's 393,628-CpG dataset-presence checkpoint from the
 original source matrices, run:
@@ -63,6 +78,7 @@ source("rebuild_18of23_sites.R")
 |-- fig_repository/       final manuscript figures
 |-- archive/              exploratory and superseded analyses
 |-- run_preprocessing.R   exact raw-data preprocessing entry point
+|-- continue_preprocessing.R build splits and six matrices after validation
 |-- rebuild_18of23_sites.R lightweight 18-of-23 CpG checkpoint rebuild
 |-- check_inputs.R        reports missing required inputs
 `-- REORGANIZATION_NOTES.md
@@ -97,10 +113,10 @@ data paths do not depend on the directory from which they are opened.
 
 ## Rebuilding from raw data
 
-`run_preprocessing.R` uses the raw methylation tables and metadata to derive
-the eligible 0-80-year-old samples and CpG coverage counts from scratch. It
-stops before the expensive split/matrix work unless the raw inputs reproduce
-all original checkpoints:
+`run_preprocessing.R` uses the original methylation tables and cleaned metadata
+to derive the eligible 0-80-year-old samples and CpG coverage counts from
+scratch. It stops before the expensive split/matrix work and requires the raw
+inputs to reproduce all original checkpoints:
 
 - 486,427 rows in `running_site_list.rds` (including 850 liftover artifacts
   with missing counts)

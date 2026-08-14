@@ -24,7 +24,28 @@ liftover <- function(dataset) {
   if (!requireNamespace("sesame", quietly = TRUE)) {
     stop("The sesame package is required for the GSE114134 liftover step.")
   }
-  sesame::mLiftOver(dataset, "HM450", impute = FALSE)
+  if (!requireNamespace("sesameData", quietly = TRUE)) {
+    stop("The sesameData package is required for the GSE114134 liftover step.")
+  }
+  if (!requireNamespace("BiocParallel", quietly = TRUE)) {
+    stop("The BiocParallel package is required for the GSE114134 liftover step.")
+  }
+
+  message("Checking Sesame probe-ID references for GSE114134.")
+  cache_ok <- sesameData::sesameDataCache(c("probeIDSignature", "HM450.address"))
+  if (!isTRUE(cache_ok)) {
+    stop("Sesame could not cache the probe-ID references needed by GSE114134.")
+  }
+  sesameData::sesameDataGet("probeIDSignature")
+  sesameData::sesameDataGet("HM450.address")
+
+  sesame::mLiftOver(
+    dataset,
+    "HM450",
+    source_platform = "EPIC",
+    impute = FALSE,
+    BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)
+  )
 }
 
 validSampleIds <- function(md, age_threshold = 80) {
@@ -91,7 +112,10 @@ loadStandardCpGList <- function(
     stop("HM450 manifest must contain a probeID column.")
   }
   ids <- as.character(manifest$probeID)
-  unique(ids[!is.na(ids) & nzchar(ids)])
+  # The manifest also contains 850 Illumina control rows. They belong in the
+  # dataset-presence audit but not in the canonical 485,577-row PP matrices.
+  ids <- ids[!is.na(ids) & nzchar(ids) & !grepl("^ctl_", ids)]
+  unique(ids)
 }
 
 checkRawPreprocessingInputs <- function() {
