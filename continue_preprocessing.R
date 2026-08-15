@@ -6,7 +6,8 @@ set_project_root()
 source("R/preprocessing_core.R")
 
 required <- c(
-  "intermediates/POST_sites.rds",
+  "intermediates/POST_sites_18of23_datasets.rds",
+  "intermediates/POST_sites_4176_samples.rds",
   "intermediates/full_metadata.rds",
   "intermediates/valid_samples.rds"
 )
@@ -30,7 +31,13 @@ if (length(pp_files) != 23L) {
 full_metadata <- readRDS(project_file("intermediates", "full_metadata.rds"))
 valid_samples <- readRDS(project_file("intermediates", "valid_samples.rds"))
 all_sites <- loadStandardCpGList()
-analysis_sites <- readRDS(project_file("intermediates", "POST_sites.rds"))
+manuscript_sites <- readRDS(
+  project_file("intermediates", "POST_sites_18of23_datasets.rds")
+)
+if (length(manuscript_sites) != 393628L) {
+  stop("The manuscript matrix background must contain exactly 393,628 CpGs.")
+}
+saveRDS(manuscript_sites, project_file("intermediates", "POST_sites.rds"))
 
 split_files <- makeSplits(
   cpg_list = all_sites,
@@ -44,7 +51,7 @@ for (gender in c("all", "male", "female")) {
   for (average in c(TRUE, FALSE)) {
     generateMatrix(
       input_folder = project_file("data", "splits"),
-      cpg_list = analysis_sites,
+      cpg_list = manuscript_sites,
       full_metadata = full_metadata,
       gender = gender,
       average = average,

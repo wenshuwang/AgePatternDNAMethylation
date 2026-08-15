@@ -33,6 +33,11 @@ coverage using only the 4,641 valid samples. It is resumable and stops after it
 reproduces both the 393,628-site and 256,529-site checkpoints. It does not read
 anything from `comparison/kevin_old/`.
 
+The manuscript age-summary matrices and aaCpG filtering use the 393,628 CpGs
+present in at least 18 of 23 datasets. The 256,529-site sample-coverage list is
+saved as a separate diagnostic checkpoint, not as the paper's matrix
+background.
+
 The first 20 original beta matrices can be kept outside the repository. Set
 their folder before starting; the remaining three Series Matrix files are
 downloaded from GEO:
@@ -79,6 +84,7 @@ source("rebuild_18of23_sites.R")
 |-- archive/              exploratory and superseded analyses
 |-- run_preprocessing.R   exact raw-data preprocessing entry point
 |-- continue_preprocessing.R build splits and six matrices after validation
+|-- rebuild_manuscript_matrices.R rebuild paper matrices from saved splits
 |-- rebuild_18of23_sites.R lightweight 18-of-23 CpG checkpoint rebuild
 |-- check_inputs.R        reports missing required inputs
 `-- REORGANIZATION_NOTES.md
@@ -125,10 +131,10 @@ inputs to reproduce all original checkpoints:
 - 256,529 CpGs measured in at least 4,176 valid samples
 - 4,641 valid samples
 
-The 393,628-site manuscript checkpoint is saved as
-`intermediates/POST_sites_18of23_datasets.rds`. The downstream matrix
-background is the distinct 256,529-site list saved as
-`intermediates/POST_sites.rds`.
+The 393,628-site manuscript checkpoint is saved as both
+`intermediates/POST_sites_18of23_datasets.rds` and the active matrix/filtering
+background `intermediates/POST_sites.rds`. The stricter 256,529-site diagnostic
+list is saved separately as `intermediates/POST_sites_4176_samples.rds`.
 
 Reproducing these exact counts still requires the same raw tables, metadata
 edits, and HM450 manifest used for the original analysis. A count mismatch is

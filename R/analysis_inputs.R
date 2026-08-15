@@ -26,6 +26,9 @@ analysis_input_files <- function(archived_dir = project_file("comparison", "kevi
       dataset_presence_sites = project_file(
         "intermediates", "POST_sites_18of23_datasets.rds"
       ),
+      sample_coverage_sites = project_file(
+        "intermediates", "POST_sites_4176_samples.rds"
+      ),
       matrices = c(
         all_mean = project_file("data", "matrix", "allTRUE.csv"),
         all_sd = project_file("data", "matrix", "allFALSE.csv"),
@@ -71,6 +74,10 @@ validate_local_inputs <- function(specification) {
     readRDS(specification$dataset_presence_sites),
     "Local POST_sites_18of23_datasets.rds"
   )
+  sample_coverage_sites <- normalize_site_ids(
+    readRDS(specification$sample_coverage_sites),
+    "Local POST_sites_4176_samples.rds"
+  )
 
   if (length(dataset_presence_sites) != 393628L) {
     stop(
@@ -78,14 +85,20 @@ validate_local_inputs <- function(specification) {
       " CpGs; the original raw run requires 393,628."
     )
   }
-  if (length(filtered_sites) != 256529L) {
+  if (length(sample_coverage_sites) != 256529L) {
     stop(
-      "Local downstream list has ", length(filtered_sites),
-      " CpGs; the original raw run requires 256,529."
+      "Local sample-coverage checkpoint has ", length(sample_coverage_sites),
+      " CpGs; expected 256,529."
     )
   }
-  if (!all(filtered_sites %in% dataset_presence_sites)) {
-    stop("Local downstream CpGs are not all present in the 18-of-23 dataset list.")
+  if (length(filtered_sites) != 393628L ||
+      !identical(filtered_sites, dataset_presence_sites)) {
+    stop(
+      "Local POST_sites.rds must be the 393,628-site manuscript matrix background."
+    )
+  }
+  if (!all(sample_coverage_sites %in% dataset_presence_sites)) {
+    stop("The 4,176-sample CpGs are not all present in the manuscript background.")
   }
 
   if (!requireNamespace("data.table", quietly = TRUE)) {
@@ -108,7 +121,8 @@ validate_local_inputs <- function(specification) {
     dataset_presence_sites = dataset_presence_sites,
     observed_counts = c(
       dataset_18_of_23 = length(dataset_presence_sites),
-      analysis_sites = length(filtered_sites)
+      matrix_sites = length(filtered_sites),
+      sample_coverage_sites = length(sample_coverage_sites)
     )
   )
 }
@@ -219,7 +233,7 @@ resolve_analysis_inputs <- function(
   validation <- validate_local_inputs(files$local)
   message(
     "Analysis input mode: validated local raw-data run ",
-    "(393,628 dataset-coverage CpGs; 256,529 downstream CpGs)."
+    "(393,628-CpG manuscript matrices; 256,529-site diagnostic checkpoint)."
   )
   list(
     mode = mode,

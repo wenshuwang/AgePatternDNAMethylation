@@ -1028,9 +1028,9 @@ saveRDS(running_site_list, "intermediates/running_site_list.rds")
 saveRDS(site_list_by_samples, "intermediates/site_list_by_samples.rds")
 
 # Save both CpG lists at the point where they are derived from raw data. The
-# 393,628-site list is the manuscript's dataset-coverage checkpoint; the
-# 256,529-site list is the stricter sample-coverage background used to build
-# the downstream matrices.
+# manuscript builds its age-summary matrices from the 393,628 CpGs present in
+# at least 18 of 23 datasets. The 256,529-site sample-coverage list is retained
+# as a separate diagnostic checkpoint.
 preprocessing_counts <- reportOriginalPreprocessingCounts(
   running_site_list,
   site_list_by_samples,
@@ -1041,7 +1041,7 @@ analysis_sites <- preprocessing_counts$lists$analysis_sites
 
 saveRDS(dataset_presence_sites, "intermediates/POST_sites_18of23_datasets.rds")
 saveRDS(analysis_sites, "intermediates/POST_sites_4176_samples.rds")
-saveRDS(analysis_sites, "intermediates/POST_sites.rds")
+saveRDS(dataset_presence_sites, "intermediates/POST_sites.rds")
 
 male_samples <- intersect(
   full_metadata$sample_id[full_metadata$gender == "male"],
@@ -1222,13 +1222,12 @@ split_files <- makeSplits(cpg_list, full_metadata, valid_samples, 50000, output_
 Make matrix from splits
 
 ```{r}
-# UPDATE ON 12/4 - PREVIOUSLY: matrices had all sites
-#                - NOW: matrices only have selected sites
-#                - FUTURE: RE-GENERATE MATRICES WHEN CPG_LIST CHANGES
+# The paper's matrices contain the 393,628 CpGs passing the 18-of-23-dataset
+# presence cutoff.
 
 #cpg_list <- readRDS("cpg_list.rds")
 input_folder <- "data/splits/"
-cpg_list <- readRDS("intermediates/POST_sites.rds")
+cpg_list <- readRDS("intermediates/POST_sites_18of23_datasets.rds")
 full_metadata <- readRDS("intermediates/full_metadata.rds")
 valid_samples <- readRDS("intermediates/valid_samples.rds")
 output_folder <- "data/matrix/"

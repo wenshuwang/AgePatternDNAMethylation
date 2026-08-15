@@ -384,7 +384,10 @@ saveRDS(
   analysis_sites,
   project_file("intermediates", "POST_sites_4176_samples.rds")
 )
-saveRDS(analysis_sites, project_file("intermediates", "POST_sites.rds"))
+# The manuscript's age-summary matrices and aaCpG filtering use the 393,628
+# CpGs present in at least 18 of 23 datasets. Keep the stricter 256,529-site
+# sample-coverage checkpoint under its explicit filename for diagnostics.
+saveRDS(dataset_presence_sites, project_file("intermediates", "POST_sites.rds"))
 
 male_samples <- intersect(
   full_metadata$sample_id[full_metadata$gender == "male"], valid_samples
