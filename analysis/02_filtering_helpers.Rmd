@@ -231,8 +231,6 @@ extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs
   # filter down sites
   
   results <- results[filtered_cpg_list, ]
-  temp <- results
-  
   significant_counts <- data.frame(age_window = character(), count = integer(), Gender = character(), sites = I(list()), stringsAsFactors=FALSE)
   
   # filter sites down -> first using correlation coefficient and sd cutoff, 
@@ -258,8 +256,17 @@ extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs
     
     if (extra_filter) {
       if (dim(second_sites)[1] < 100) {
-        first_sites <- first_sites[order(-temp[, i+1]), ]
-        second_sites <- first_sites[1:100, ]
+        # Rank only the CpGs that passed the correlation/SD filter. The previous
+        # code ranked this smaller table with positions from the full results
+        # table, so changing matrix row order could change which 100 CpGs were
+        # selected. CpG ID is an explicit tie-breaker for reproducible output.
+        ranked_index <- order(
+          -first_sites[, i+1],
+          rownames(first_sites),
+          na.last = NA
+        )
+        keep_n <- min(100L, length(ranked_index))
+        second_sites <- first_sites[ranked_index[seq_len(keep_n)], , drop=FALSE]
       }
     }
     
