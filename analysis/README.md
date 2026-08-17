@@ -36,6 +36,36 @@ the validated original checkpoint and matrix files under
 for the required filenames. This is an optional fallback; complete local
 outputs are preferred automatically and remain separate from archived files.
 
+## Final manuscript outputs
+
+After filtering has created the corrected `*_list.rds`, `*_select_cpg.rds`, and
+`*_results.rds` files, generate the final code-based outputs from the repository
+root with:
+
+```r
+source("run_final_outputs.R")
+```
+
+This creates a `final_outputs/` folder containing:
+
+- Table 1 as CSV, PDF, and PNG;
+- Figure 3 as PDF and PNG;
+- Supplementary Figure 4 as PDF;
+- clustering Figures 2 and 5 as PDF; and
+- reusable cluster-assignment RDS files under `relevant_rds/`.
+
+To make only the quick table and overlap figures without rerunning clustering:
+
+```r
+options(agepattern.run_clustering = FALSE)
+source("run_final_outputs.R")
+```
+
+Figure 1 is a manually assembled workflow schematic in the manuscript. The
+original Figure 4 code also requires `CPG_position.csv`, the whole-genome CpG
+coordinate file used in the original analysis; that large reference file is not
+included in this repository, so Figure 4 is not run automatically.
+
 ## Paths
 
 Every notebook loads `../R/project_paths.R` and then resolves inputs from the

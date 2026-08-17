@@ -11,45 +11,13 @@ set_project_root()
 ```{r}
 clocks <- c("McEwen", "Wu", "Hannum", "Horvath", "Levine", "Belsky", "Teschendorff", "Shireby", "Lu")
 selected_clock_cpgs <- readRDS("relevant_rds/clock_cpgs.rds")
-# Binary annotation matrix: rows are clock CpGs and columns indicate membership
-# in each published clock. It is displayed beside the clock heatmap.
-clock_annotations <- matrix(0,
-  nrow = length(selected_clock_cpgs),
-  ncol = length(clocks),
-  dimnames = list(selected_clock_cpgs, clocks)
-)
-
-for(j in seq_along(clocks)) {
-  this_clock <- clocks[j]
-  hits <- rownames(clock_annotations) %in% clock_cpgs[[ this_clock ]]
-  clock_annotations[hits, this_clock] <- 1
+if (!length(selected_clock_cpgs)) {
+  stop("The filtered clock CpG list is empty.")
 }
 
-# Row order saved by the clustering/heatmap step; applying it keeps annotation
-# rows aligned with the already ordered heatmap rows.
-correct_order <- readRDS("relevant_rds/correct_order.rds")
-clock_annotations <- clock_annotations[correct_order, ]
-
-df_ann <- as.data.frame(clock_annotations, stringsAsFactors = FALSE)
-df_ann[] <- lapply(df_ann, function(x) factor(x, levels = c(0,1)))
-
-ha <- rowAnnotation(
-  df = df_ann,
-  col = list(
-    McEwen       = c("0"="gray","1"="purple"),
-    Wu           = c("0"="gray","1"="orange"),
-    Hannum       = c("0"="gray","1"="red"),
-    Horvath      = c("0"="gray","1"="blue"),
-    Levine       = c("0"="gray","1"="green"),
-    Belsky        = c("0"="gray","1"="yellow"),
-    Teschendorff = c("0"="gray","1"="pink"),
-    Shireby      = c("0"="gray","1"="magenta"),
-    Lu           = c("0"="gray","1"="maroon")
-  ),
-  simple_anno_size  = unit(3, "mm"),
-  show_legend       = FALSE,
-  annotation_name_gp = gpar(fontsize=10, fontfamily="Helvetica")
-)
+# The clock-membership annotation is constructed inside mainPipeline after the
+# matrix has been filtered. This guarantees that its rows stay aligned with the
+# heatmap and avoids relying on a separately saved row-order file.
 ```
 
 ```{r}
@@ -58,26 +26,39 @@ ha <- rowAnnotation(
 # param ret: either "df" to get the matrix with clusters annotated for use in further pipeline, or "plot" to get the plot, for use in combining in Fig 2 and 5
 # param labs: only relevant if ret == "plot", just specifying what labels you want
 
-# These four calls use the same seed and four-cluster setting so panels are
-# comparable. ret="df" returns CpG rows with their assigned cluster.
-non_all <- mainPipeline(4, TRUE, FALSE, "all", "df", c("C", "D"))
-clock_all <- mainPipeline(4, TRUE, TRUE, "all", "df", c("A", "B"))
-male_all <- mainPipeline(4, TRUE, FALSE, "male", "df", c("A", "B"))
-female_all <- mainPipeline(4, TRUE, FALSE, "female", "df", c("C", "D"))
+# Each call returns both the cluster assignments and its heatmap/scatter panel,
+# so the expensive clustering step runs only once per cohort.
+non_run <- mainPipeline(4, FALSE, FALSE, "all", "both", c("C", "D"))
+clock_run <- mainPipeline(4, FALSE, TRUE, "all", "both", c("A", "B"))
+male_run <- mainPipeline(4, FALSE, FALSE, "male", "both", c("A", "B"))
+female_run <- mainPipeline(4, FALSE, FALSE, "female", "both", c("C", "D"))
 
-# save for later for combination with enrichment stuff
-fig2b <- non_all
-fig2a <- clock_all
+non_all <- non_run$data
+clock_all <- clock_run$data
+male_all <- male_run$data
+female_all <- female_run$data
 
-fig5a <- male_all
-fig5b <- female_all
+fig2a <- clock_run$plot
+fig2b <- non_run$plot
+fig5a <- male_run$plot
+fig5b <- female_run$plot
+
+cluster_output_dir <- getOption(
+  "agepattern.cluster_output_dir",
+  "relevant_rds"
+)
+dir.create(cluster_output_dir, recursive = TRUE, showWarnings = FALSE)
+saveRDS(non_all, file.path(cluster_output_dir, "all_cluster_assignments.rds"))
+saveRDS(clock_all, file.path(cluster_output_dir, "clock_cluster_assignments.rds"))
+saveRDS(male_all, file.path(cluster_output_dir, "male_cluster_assignments.rds"))
+saveRDS(female_all, file.path(cluster_output_dir, "female_cluster_assignments.rds"))
 
 
 ```
 
 Determine enrichment of CpG sites in clusters
 - enrichment of clock CpGs in clock clusters
-- enrichment of aaCpGs in each window in aaCpG clusters (Fig. 3C & Fig. 3D)
+- enrichment of aaCpGs in each window in aaCpG clusters (Figure 2F)
 
 *Necessary to run mainPipeline to have the matrices with cluster annotations ready, but can be done quickly by specifying save=FALSE and plot_smooth=FALSE
 *Necessary to run filter code to have list1 ready
@@ -99,13 +80,15 @@ fig2c <- plot_grid(p3, p4, labels=c("E", "F"), rel_widths=c(0.8, 1.2))
 # combined for fig2 -> fig2a, fig2b, p3, and p4
 
 combined <- plot_grid(fig2a, fig2b, fig2c, nrow=3, rel_heights = c(1, 1, 0.8))
-ggsave("new_figs/fig_2.pdf", plot = combined, device=cairo_pdf, 
+output_dir <- getOption("agepattern.output_dir", "new_figs")
+dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+ggsave(file.path(output_dir, "figure2.pdf"), plot = combined, device=cairo_pdf,
         width = 15, height = 16, dpi=300)
 
 # combined for fig5 <- fig5a, fig5b
 
 combined <- plot_grid(fig5a, fig5b, nrow=2)
-ggsave("new_figs/fig_5.pdf", plot = combined, device = cairo_pdf, width = 15, height = 11.42, dpi=300)
+ggsave(file.path(output_dir, "figure5.pdf"), plot = combined, device = cairo_pdf, width = 15, height = 11.42, dpi=300)
 
 
 ```
