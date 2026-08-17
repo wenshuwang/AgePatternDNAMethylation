@@ -229,7 +229,9 @@ ggsave("../fig_repository/supp_fig3.png", panel_grid, width=9, height=30, dpi=30
 # Threshold arguments are: |correlation|, young-window beta change,
 # old-window beta change, and the maximum count of high-SD age points.
 
-# extra_filter adds the condition that if less than 100 sites are selected, select the 100 sites with the greatest absolute beta change
+# If a window has fewer than 100 strict hits, extra_filter applies the original
+# fallback: pass the SD rule, keep the top 1,000 absolute correlations, then
+# retain the 100 largest beta changes.
 
 # extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs_threshold_young, abs_threshold_old, sd_threshold, extra_filter=TRUE)
 

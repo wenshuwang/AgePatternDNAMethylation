@@ -223,8 +223,10 @@ Filter using results
 ```{r}
 
 # Fallback for sparse windows: when fewer than 100 CpGs pass all thresholds,
-# extra_filter=TRUE retains 100 candidates from the correlation/SD-filtered set,
-# ranked by absolute beta change. This keeps sparse windows visible in plots.
+# first retain sites that pass the SD rule, then keep the 1,000 strongest
+# absolute age correlations, and finally select the 100 largest beta changes.
+# This is the three-stage fallback described by the original analysis and makes
+# the selection deterministic by using CpG IDs to break exact ties.
 
 # output: structure with for each age window: num of cpg sites filtered and full list
 extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs_threshold_young, abs_threshold_old, sd_threshold, extra_filter=TRUE) {
@@ -256,17 +258,39 @@ extract_sites <- function(results, filtered_cpg_list, gender, cor_threshold, abs
     
     if (extra_filter) {
       if (dim(second_sites)[1] < 100) {
-        # Rank only the CpGs that passed the correlation/SD filter. The previous
-        # code ranked this smaller table with positions from the full results
-        # table, so changing matrix row order could change which 100 CpGs were
-        # selected. CpG ID is an explicit tie-breaker for reproducible output.
-        ranked_index <- order(
-          -first_sites[, i+1],
-          rownames(first_sites),
+        # The old implementation calculated ordering positions from the full
+        # results table and applied them to a smaller table. That made the chosen
+        # CpGs depend on row order and could introduce NA rows. Build each stage
+        # from explicit CpG indices instead.
+        corr_values <- results[, i]
+        beta_changes <- results[, i+1]
+        sd_values <- results[, i+2]
+
+        sd_eligible <- which(
+          !is.na(corr_values) &
+          !is.na(beta_changes) &
+          !is.na(sd_values) &
+          sd_values < sd_threshold
+        )
+
+        correlation_rank <- order(
+          -abs(corr_values[sd_eligible]),
+          rownames(results)[sd_eligible],
           na.last = NA
         )
-        keep_n <- min(100L, length(ranked_index))
-        second_sites <- first_sites[ranked_index[seq_len(keep_n)], , drop=FALSE]
+        top_correlation <- sd_eligible[
+          correlation_rank[seq_len(min(1000L, length(correlation_rank)))]
+        ]
+
+        beta_rank <- order(
+          -beta_changes[top_correlation],
+          rownames(results)[top_correlation],
+          na.last = NA
+        )
+        selected_index <- top_correlation[
+          beta_rank[seq_len(min(100L, length(beta_rank)))]
+        ]
+        second_sites <- results[selected_index, , drop=FALSE]
       }
     }
     
